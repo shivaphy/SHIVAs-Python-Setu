@@ -898,6 +898,340 @@ const DEFAULT_MODULES = [
       </div>
     `,
     starterCode: '# 🏆 Final Challenge — Grade Calculator\n# Combine everything you\'ve learned!\n\n# 1. A function to convert score to grade:\ndef get_grade(score):\n    if score >= 90:\n        return "A"\n    elif score >= 80:\n        return "B"\n    elif score >= 70:\n        return "C"\n    elif score >= 60:\n        return "D"\n    else:\n        return "F"\n\n# 2. Student data:\nstudents = [\n    {"name": "Alice", "score": 92},\n    {"name": "Bob", "score": 78},\n    {"name": "Carol", "score": 85},\n    {"name": "Dave", "score": 61},\n    {"name": "Eve", "score": 97},\n]\n\n# 3. Calculate stats:\nscores = [s["score"] for s in students]\naverage = sum(scores) / len(scores)\nhighest = max(scores)\nlowest = min(scores)\n\n# 4. Print report:\nprint("=" * 35)\nprint("  📊 GRADE REPORT")\nprint("=" * 35)\nfor student in students:\n    grade = get_grade(student["score"])\n    print(f"  {student[\'name\']:<8} {student[\'score\']}  →  Grade {grade}")\nprint("-" * 35)\nprint(f"  Average : {average:.1f}")\nprint(f"  Highest : {highest}")\nprint(f"  Lowest  : {lowest}")\nprint("=" * 35)'
+  },
+
+  // ══════════════════════════════════════════════════════════
+  // MODULE 8 — Universal Constants & Precision
+  // ══════════════════════════════════════════════════════════
+  {
+    id: 'eng_constants',
+    icon: '🔬',
+    title: 'Universal Constants & Precision',
+    tag: 'intermediate',
+    tagLabel: 'Intermediate',
+    duration: '14 min',
+    completed: false,
+    content: `
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
+        <div style="font-size:36px;">🔬</div>
+        <div>
+          <span class="lesson-tag intermediate">Intermediate</span>
+          <h2 style="margin:6px 0 0;">Universal Constants &amp; Precision</h2>
+        </div>
+      </div>
+      <p>Engineering relies on precise physical constants. Python variables are the natural home for these values — name them clearly, use them everywhere, change them in one place.</p>
+      <h3>Defining Engineering Constants</h3>
+      <pre><span class="cm"># Physics &amp; Mathematics constants</span>
+<span class="kw">g</span>  = <span class="num">9.81</span>       <span class="cm"># gravitational acceleration (m/s²)</span>
+<span class="kw">c</span>  = <span class="num">3e8</span>        <span class="cm"># speed of light (m/s) — 3 × 10⁸</span>
+<span class="kw">PI</span> = <span class="num">3.14159265</span> <span class="cm"># π (use math.pi in real code)</span>
+<span class="kw">R</span>  = <span class="num">8.314</span>      <span class="cm"># universal gas constant (J/mol·K)</span>
+<span class="kw">h</span>  = <span class="num">6.626e-34</span>  <span class="cm"># Planck's constant (J·s)</span>
+
+<span class="fn">print</span>(<span class="str">f"g = {g} m/s²"</span>)
+<span class="fn">print</span>(<span class="str">f"c = {c:.2e} m/s"</span>)   <span class="cm"># scientific notation</span></pre>
+      <h3>Float Precision — A Hidden Trap</h3>
+      <p>Computers represent decimal numbers in binary, which causes tiny rounding errors. Engineers must know this!</p>
+      <pre><span class="cm"># Unexpected result:</span>
+<span class="fn">print</span>(<span class="num">0.1</span> + <span class="num">0.2</span>)          <span class="cm"># 0.30000000000000004 !</span>
+
+<span class="cm"># Fix 1: round() for display</span>
+<span class="fn">print</span>(<span class="fn">round</span>(<span class="num">0.1</span> + <span class="num">0.2</span>, <span class="num">2</span>))  <span class="cm"># 0.3</span>
+
+<span class="cm"># Fix 2: f-string formatting</span>
+<span class="kw">result</span> = <span class="num">0.1</span> + <span class="num">0.2</span>
+<span class="fn">print</span>(<span class="str">f"Result = {result:.4f}"</span>) <span class="cm"># 4 decimal places</span></pre>
+      <h3>F-String Format Specifiers for Engineers</h3>
+      <div style="background:#f8fafc;border-radius:8px;padding:14px;border:1px solid #e2e8f0;margin:10px 0;">
+        <table style="width:100%;border-collapse:collapse;font-size:13px;">
+          <tr style="border-bottom:1px solid #e2e8f0;"><td style="padding:6px 8px;font-family:'DM Mono',monospace;color:#0254a0;">.2f</td><td style="padding:6px 8px;color:#475569;">2 decimal places: <code>3.14</code></td></tr>
+          <tr style="border-bottom:1px solid #e2e8f0;"><td style="padding:6px 8px;font-family:'DM Mono',monospace;color:#0254a0;">.4e</td><td style="padding:6px 8px;color:#475569;">Scientific notation: <code>3.1416e+00</code></td></tr>
+          <tr style="border-bottom:1px solid #e2e8f0;"><td style="padding:6px 8px;font-family:'DM Mono',monospace;color:#0254a0;">.6g</td><td style="padding:6px 8px;color:#475569;">Auto significant figures: <code>3.14159</code></td></tr>
+          <tr><td style="padding:6px 8px;font-family:'DM Mono',monospace;color:#0254a0;">10.3f</td><td style="padding:6px 8px;color:#475569;">Width 10, 3 decimals (right-aligned)</td></tr>
+        </table>
+      </div>
+      <h3>Kinematic Example</h3>
+      <pre><span class="kw">g</span> = <span class="num">9.81</span>
+<span class="kw">t</span> = <span class="num">3.0</span>   <span class="cm"># time in seconds</span>
+<span class="kw">v0</span> = <span class="num">0</span>    <span class="cm"># initial velocity</span>
+
+<span class="cm"># Distance fallen: s = v0*t + 0.5*g*t²</span>
+<span class="kw">s</span> = <span class="kw">v0</span> * <span class="kw">t</span> + <span class="num">0.5</span> * <span class="kw">g</span> * <span class="kw">t</span> ** <span class="num">2</span>
+<span class="fn">print</span>(<span class="str">f"After {t}s, object falls {s:.2f} m"</span>)</pre>
+      <div class="hint-box" style="margin-top:16px;">
+        🎯 <strong>Challenge:</strong> Define constants for <code>g</code>, <code>PI</code>, and <code>R</code>. Compute the circumference of a circle with radius 7 m, the weight of a 50 kg object, and the energy of a photon with frequency 5×10¹⁴ Hz using <code>E = h * f</code>. Format all outputs to 4 significant figures.
+      </div>
+    `,
+    starterCode: '# Module 8 — Universal Constants & Precision\n\n# Define your constants:\ng  = 9.81          # m/s²\nPI = 3.14159265\nR  = 8.314         # J/mol·K\nh  = 6.626e-34      # Planck constant J·s\nc  = 3e8           # speed of light m/s\n\n# --- Task 1: Circumference of circle r = 7 m\nr = 7\ncircumference = 2 * PI * r\nprint(f"Circumference = {circumference:.4f} m")\n\n# --- Task 2: Weight of 50 kg object\nmass = 50\nweight = mass * g\nprint(f"Weight = {weight:.2f} N")\n\n# --- Task 3: Photon energy  E = h * f\nf = 5e14           # frequency Hz\nE = h * f\nprint(f"Photon energy = {E:.4e} J")\n\n# --- Float precision demo:\nprint(f"0.1 + 0.2 = {0.1 + 0.2}")\nprint(f"0.1 + 0.2 (rounded) = {round(0.1 + 0.2, 4)}")'
+  },
+
+  // ══════════════════════════════════════════════════════════
+  // MODULE 9 — Engineering Design Logic
+  // ══════════════════════════════════════════════════════════
+  {
+    id: 'eng_design_logic',
+    icon: '🏗️',
+    title: 'Engineering Design Logic',
+    tag: 'intermediate',
+    tagLabel: 'Intermediate',
+    duration: '16 min',
+    completed: false,
+    content: `
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
+        <div style="font-size:36px;">🏗️</div>
+        <div>
+          <span class="lesson-tag intermediate">Intermediate</span>
+          <h2 style="margin:6px 0 0;">Engineering Design Logic</h2>
+        </div>
+      </div>
+      <p>Every engineering discipline uses <strong>design decisions</strong>: is a beam safe? Is a circuit overloaded? Does a mixture meet specification? These are if/else problems at their core.</p>
+      <h3>Civil Engineering — Beam Safety Factor</h3>
+      <pre><span class="cm"># Safety Factor = Ultimate Load / Applied Load</span>
+<span class="kw">ultimate_load</span> = <span class="num">500</span>   <span class="cm"># kN</span>
+<span class="kw">applied_load</span>  = <span class="num">180</span>   <span class="cm"># kN</span>
+<span class="kw">SF</span> = <span class="kw">ultimate_load</span> / <span class="kw">applied_load</span>
+
+<span class="kw">if</span> <span class="kw">SF</span> >= <span class="num">3.0</span>:
+    <span class="fn">print</span>(<span class="str">f"SF={SF:.2f} — SAFE ✅ (conservative design)"</span>)
+<span class="kw">elif</span> <span class="kw">SF</span> >= <span class="num">2.0</span>:
+    <span class="fn">print</span>(<span class="str">f"SF={SF:.2f} — ACCEPTABLE ⚠️ (review margins)"</span>)
+<span class="kw">else</span>:
+    <span class="fn">print</span>(<span class="str">f"SF={SF:.2f} — UNSAFE ❌ (redesign required)"</span>)</pre>
+      <h3>Electrical Engineering — Wire Current Rating</h3>
+      <pre><span class="cm"># Check if conductor can carry the load current</span>
+<span class="kw">rated_current</span>  = <span class="num">16</span>   <span class="cm"># A (cable rating)</span>
+<span class="kw">load_current</span>   = <span class="num">13.5</span> <span class="cm"># A (actual demand)</span>
+<span class="kw">diversity</span>      = <span class="num">0.8</span>  <span class="cm"># diversity factor</span>
+
+<span class="kw">demand</span> = <span class="kw">load_current</span> * <span class="kw">diversity</span>
+
+<span class="kw">if</span> <span class="kw">demand</span> <= <span class="kw">rated_current</span> * <span class="num">0.8</span>:
+    <span class="fn">print</span>(<span class="str">"Circuit: OK — within 80% of rating"</span>)
+<span class="kw">elif</span> <span class="kw">demand</span> <= <span class="kw">rated_current</span>:
+    <span class="fn">print</span>(<span class="str">"Circuit: MARGINAL — approaching limit"</span>)
+<span class="kw">else</span>:
+    <span class="fn">print</span>(<span class="str">"Circuit: OVERLOADED — upsize conductor"</span>)</pre>
+      <h3>Mechanical Engineering — Material Selection</h3>
+      <pre><span class="kw">yield_strength</span>   = <span class="num">250</span>  <span class="cm"># MPa (mild steel)</span>
+<span class="kw">applied_stress</span>   = <span class="num">95</span>   <span class="cm"># MPa</span>
+<span class="kw">temperature</span>      = <span class="num">420</span>  <span class="cm"># °C</span>
+
+<span class="kw">if</span> <span class="kw">temperature</span> > <span class="num">400</span>:
+    <span class="fn">print</span>(<span class="str">"Warning: High temp — consider alloy steel"</span>)
+<span class="kw">if</span> <span class="kw">applied_stress</span> < <span class="kw">yield_strength</span> / <span class="num">2</span>:
+    <span class="fn">print</span>(<span class="str">"Stress: Well within elastic limit ✅"</span>)
+<span class="kw">else</span>:
+    <span class="fn">print</span>(<span class="str">"Stress: Approaching yield — check FoS"</span>)</pre>
+      <div class="hint-box" style="margin-top:16px;">
+        🎯 <strong>Challenge:</strong> Write a <strong>Chemical Engineering</strong> pH classifier. Given a pH value, print "Strong Acid" (pH &lt; 2), "Weak Acid" (2–6.9), "Neutral" (7), "Weak Base" (7.1–11), or "Strong Base" (&gt; 11). Test it with pH values of 1, 4, 7, 9, and 13.
+      </div>
+    `,
+    starterCode: '# Module 9 — Engineering Design Logic\n\n# --- Civil: Safety Factor check\nultimate_load = 500   # kN\napplied_load  = 180   # kN\nSF = ultimate_load / applied_load\n\nif SF >= 3.0:\n    print(f"SF = {SF:.2f} — SAFE ✅")\nelif SF >= 2.0:\n    print(f"SF = {SF:.2f} — ACCEPTABLE ⚠️")\nelse:\n    print(f"SF = {SF:.2f} — UNSAFE ❌")\n\nprint("---")\n\n# --- Electrical: conductor check\nrated_current = 16\nload_current  = 13.5\ndiversity     = 0.8\ndemand = load_current * diversity\n\nif demand <= rated_current * 0.8:\n    print(f"Demand {demand:.1f}A — OK within 80% rating")\nelif demand <= rated_current:\n    print(f"Demand {demand:.1f}A — MARGINAL")\nelse:\n    print(f"Demand {demand:.1f}A — OVERLOADED")\n\nprint("---")\n\n# --- Your turn: Chemical pH classifier\npH_values = [1, 4, 7, 9, 13]\nfor pH in pH_values:\n    if pH < 2:\n        category = "Strong Acid"\n    elif pH < 7:\n        category = "Weak Acid"\n    elif pH == 7:\n        category = "Neutral"\n    elif pH <= 11:\n        category = "Weak Base"\n    else:\n        category = "Strong Base"\n    print(f"pH {pH:>2} → {category}")'
+  },
+
+  // ══════════════════════════════════════════════════════════
+  // MODULE 10 — Multi-Trial Lab Analysis
+  // ══════════════════════════════════════════════════════════
+  {
+    id: 'eng_lab_loops',
+    icon: '🧪',
+    title: 'Multi-Trial Lab Analysis',
+    tag: 'intermediate',
+    tagLabel: 'Intermediate',
+    duration: '18 min',
+    completed: false,
+    content: `
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
+        <div style="font-size:36px;">🧪</div>
+        <div>
+          <span class="lesson-tag intermediate">Intermediate</span>
+          <h2 style="margin:6px 0 0;">Multi-Trial Lab Analysis</h2>
+        </div>
+      </div>
+      <p>Lab work produces <em>repeated measurements</em>. Processing them by hand is tedious and error-prone. Loops automate this perfectly — one loop body, all trials processed identically.</p>
+      <h3>Physics Lab — Free-Fall Experiment</h3>
+      <pre><span class="cm"># 5 timing trials for a falling object</span>
+<span class="kw">g</span> = <span class="num">9.81</span>
+<span class="kw">times</span> = [<span class="num">0.452</span>, <span class="num">0.448</span>, <span class="num">0.461</span>, <span class="num">0.445</span>, <span class="num">0.455</span>]  <span class="cm"># seconds</span>
+
+<span class="fn">print</span>(<span class="str">"Trial  Time(s)  Height(m)"</span>)
+<span class="fn">print</span>(<span class="str">"-" * 28</span>)
+<span class="kw">for</span> i, t <span class="kw">in</span> <span class="fn">enumerate</span>(<span class="kw">times</span>):
+    <span class="kw">h</span> = <span class="num">0.5</span> * <span class="kw">g</span> * <span class="kw">t</span> ** <span class="num">2</span>
+    <span class="fn">print</span>(<span class="str">f"  {i+1}     {t:.3f}    {h:.4f}"</span>)
+
+<span class="kw">avg_t</span> = <span class="fn">sum</span>(<span class="kw">times</span>) / <span class="fn">len</span>(<span class="kw">times</span>)
+<span class="fn">print</span>(<span class="str">f"Mean time = {avg_t:.4f} s"</span>)</pre>
+      <h3>Chemistry Lab — Titration Data</h3>
+      <pre><span class="cm"># Burette readings for NaOH titration (mL)</span>
+<span class="kw">burette_readings</span> = [<span class="num">24.8</span>, <span class="num">25.0</span>, <span class="num">24.9</span>, <span class="num">25.1</span>, <span class="num">24.7</span>]
+<span class="kw">concordant</span> = []
+
+<span class="kw">for</span> v <span class="kw">in</span> <span class="kw">burette_readings</span>:
+    <span class="kw">mean</span> = <span class="fn">sum</span>(<span class="kw">burette_readings</span>) / <span class="fn">len</span>(<span class="kw">burette_readings</span>)
+    <span class="kw">if</span> <span class="fn">abs</span>(<span class="kw">v</span> - <span class="kw">mean</span>) <= <span class="num">0.2</span>:      <span class="cm"># within ±0.2 mL</span>
+        <span class="kw">concordant</span>.<span class="fn">append</span>(<span class="kw">v</span>)
+
+<span class="kw">mean_conc</span> = <span class="fn">sum</span>(<span class="kw">concordant</span>) / <span class="fn">len</span>(<span class="kw">concordant</span>)
+<span class="fn">print</span>(<span class="str">f"Concordant readings: {concordant}"</span>)
+<span class="fn">print</span>(<span class="str">f"Mean titre = {mean_conc:.2f} mL"</span>)</pre>
+      <h3>Mechanical Lab — Stress-Strain Data</h3>
+      <pre><span class="cm"># Load (kN) and extension (mm) pairs</span>
+<span class="kw">load_ext</span> = [
+    (<span class="num">0</span>, <span class="num">0</span>), (<span class="num">10</span>, <span class="num">0.12</span>), (<span class="num">20</span>, <span class="num">0.24</span>),
+    (<span class="num">30</span>, <span class="num">0.36</span>), (<span class="num">40</span>, <span class="num">0.49</span>), (<span class="num">50</span>, <span class="num">0.62</span>)
+]
+<span class="kw">gauge_length</span> = <span class="num">50</span>   <span class="cm"># mm</span>
+<span class="kw">area</span>         = <span class="num">78.5</span>  <span class="cm"># mm² (10mm dia bar)</span>
+
+<span class="fn">print</span>(<span class="str">"Load(kN)  Stress(MPa)  Strain"</span>)
+<span class="kw">for</span> load, ext <span class="kw">in</span> <span class="kw">load_ext</span>:
+    <span class="kw">stress</span> = (load * <span class="num">1000</span>) / <span class="kw">area</span>
+    <span class="kw">strain</span> = ext / <span class="kw">gauge_length</span>
+    <span class="fn">print</span>(<span class="str">f"  {load:>5}     {stress:>8.2f}   {strain:.5f}"</span>)</pre>
+      <div class="hint-box" style="margin-top:16px;">
+        🎯 <strong>Challenge:</strong> Write a <strong>Mathematics lab loop</strong> that iterates over angles [0°, 30°, 45°, 60°, 90°] and prints sin, cos, and tan values for each. Use the approximations: sin(0)=0, sin(30)=0.5, sin(45)=0.707, sin(60)=0.866, sin(90)=1 stored in parallel lists.
+      </div>
+    `,
+    starterCode: '# Module 10 — Multi-Trial Lab Analysis\n\n# --- Physics: Free-fall experiment\ng = 9.81\ntimes = [0.452, 0.448, 0.461, 0.445, 0.455]\n\nprint("Trial  Time(s)  Height(m)")\nprint("-" * 28)\nfor i in range(len(times)):\n    t = times[i]\n    h = 0.5 * g * t ** 2\n    print(f"  {i+1}     {t:.3f}    {h:.4f}")\n\navg_t = sum(times) / len(times)\nprint(f"Mean time = {avg_t:.4f} s")\nprint()\n\n# --- Chemistry: Titration concordancy\nburette_readings = [24.8, 25.0, 24.9, 25.1, 24.7]\nmean_all = sum(burette_readings) / len(burette_readings)\nconcordant = []\nfor v in burette_readings:\n    if abs(v - mean_all) <= 0.2:\n        concordant.append(v)\nmean_titre = sum(concordant) / len(concordant)\nprint(f"Concordant readings : {concordant}")\nprint(f"Mean titre          = {mean_titre:.2f} mL")\nprint()\n\n# --- Maths: Trig table (add your own!)\nangles  = [0,   30,   45,   60,   90  ]\nsines   = [0,   0.5,  0.707, 0.866, 1.0]\ncosines = [1.0, 0.866,0.707, 0.5,  0  ]\n\nprint("Angle  sin     cos")\nprint("-" * 24)\nfor i in range(len(angles)):\n    print(f" {angles[i]:>3}°   {sines[i]:.3f}   {cosines[i]:.3f}")'
+  },
+
+  // ══════════════════════════════════════════════════════════
+  // MODULE 11 — Cross-Disciplinary Formula Libraries
+  // ══════════════════════════════════════════════════════════
+  {
+    id: 'eng_formula_lib',
+    icon: '📐',
+    title: 'Cross-Disciplinary Formula Libraries',
+    tag: 'intermediate',
+    tagLabel: 'Intermediate',
+    duration: '20 min',
+    completed: false,
+    content: `
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
+        <div style="font-size:36px;">📐</div>
+        <div>
+          <span class="lesson-tag intermediate">Intermediate</span>
+          <h2 style="margin:6px 0 0;">Cross-Disciplinary Formula Libraries</h2>
+        </div>
+      </div>
+      <p>The real power of functions is building a <strong>personal formula library</strong> — define once, reuse endlessly across projects, disciplines, and colleagues.</p>
+      <h3>Civil Engineering Functions</h3>
+      <pre><span class="kw">def</span> <span class="fn">moment_of_inertia_rect</span>(b, d):
+    <span class="cm">"""Second moment of area for rectangle (mm⁴)"""</span>
+    <span class="kw">return</span> (b * d ** <span class="num">3</span>) / <span class="num">12</span>
+
+<span class="kw">def</span> <span class="fn">bending_stress</span>(M, y, I):
+    <span class="cm">"""σ = My/I  (MPa when M in N·mm)"""</span>
+    <span class="kw">return</span> (M * y) / I
+
+<span class="cm"># 200mm wide × 300mm deep beam, M = 50 kN·m</span>
+<span class="kw">I</span> = <span class="fn">moment_of_inertia_rect</span>(<span class="num">200</span>, <span class="num">300</span>)
+<span class="kw">sigma</span> = <span class="fn">bending_stress</span>(<span class="num">50e6</span>, <span class="num">150</span>, <span class="kw">I</span>)
+<span class="fn">print</span>(<span class="str">f"I = {I:.0f} mm⁴,  σ = {sigma:.2f} MPa"</span>)</pre>
+      <h3>Mechanical Engineering Functions</h3>
+      <pre><span class="kw">def</span> <span class="fn">thermal_expansion</span>(L0, delta_T, alpha):
+    <span class="cm">"""ΔL = L₀ × α × ΔT"""</span>
+    <span class="kw">return</span> L0 * alpha * delta_T
+
+<span class="kw">def</span> <span class="fn">power_shaft</span>(torque_Nm, rpm):
+    <span class="cm">"""P = T × ω = T × 2πN/60  (Watts)"""</span>
+    <span class="kw">omega</span> = <span class="num">2</span> * <span class="num">3.14159</span> * rpm / <span class="num">60</span>
+    <span class="kw">return</span> torque_Nm * omega
+
+<span class="cm"># Steel pipe: L=5m, ΔT=80°C, α=12×10⁻⁶/°C</span>
+<span class="kw">dL</span> = <span class="fn">thermal_expansion</span>(<span class="num">5000</span>, <span class="num">80</span>, <span class="num">12e-6</span>)
+<span class="fn">print</span>(<span class="str">f"Thermal expansion = {dL:.3f} mm"</span>)
+
+<span class="cm"># Shaft: 120 N·m at 1450 rpm</span>
+<span class="kw">P</span> = <span class="fn">power_shaft</span>(<span class="num">120</span>, <span class="num">1450</span>)
+<span class="fn">print</span>(<span class="str">f"Shaft power = {P/1000:.2f} kW"</span>)</pre>
+      <h3>Electrical Engineering Functions</h3>
+      <pre><span class="kw">def</span> <span class="fn">ohms_law</span>(known, value1, value2=<span class="kw">None</span>):
+    <span class="cm">"""Solve V=IR for the unknown."""</span>
+    <span class="kw">if</span> known == <span class="str">"V"</span>: <span class="kw">return</span> value1 * value2   <span class="cm"># V = I*R</span>
+    <span class="kw">if</span> known == <span class="str">"I"</span>: <span class="kw">return</span> value1 / value2   <span class="cm"># I = V/R</span>
+    <span class="kw">if</span> known == <span class="str">"R"</span>: <span class="kw">return</span> value1 / value2   <span class="cm"># R = V/I</span>
+
+<span class="kw">def</span> <span class="fn">power_electrical</span>(V, I):
+    <span class="cm">"""P = V × I  (Watts)"""</span>
+    <span class="kw">return</span> V * I
+
+<span class="fn">print</span>(<span class="str">f"V = {ohms_law('V', 2.5, 47):.1f} V"</span>)
+<span class="fn">print</span>(<span class="str">f"P = {power_electrical(230, 13):.0f} W"</span>)</pre>
+      <div class="hint-box" style="margin-top:16px;">
+        🎯 <strong>Challenge:</strong> Add a <strong>Chemical Engineering</strong> function called <code>ideal_gas_pressure(n, T, V)</code> that implements the ideal gas law <em>PV = nRT</em> and returns pressure P. Use R = 8.314. Test with n=2 mol, T=300 K, V=0.05 m³.
+      </div>
+    `,
+    starterCode: '# Module 11 — Cross-Disciplinary Formula Libraries\n\nPI = 3.14159265\n\n# ── Civil Engineering ──────────────────────────\ndef moment_of_inertia_rect(b, d):\n    """Second moment of area for rectangle (mm^4)"""\n    return (b * d ** 3) / 12\n\ndef bending_stress(M, y, I):\n    """Bending stress sigma = M*y/I (MPa)"""\n    return (M * y) / I\n\nI_beam = moment_of_inertia_rect(200, 300)\nsigma  = bending_stress(50e6, 150, I_beam)\nprint(f"Civil   | I = {I_beam:.0f} mm^4  |  sigma = {sigma:.2f} MPa")\n\n# ── Mechanical Engineering ─────────────────────\ndef thermal_expansion(L0, delta_T, alpha):\n    """Delta_L = L0 * alpha * Delta_T"""\n    return L0 * alpha * delta_T\n\ndef power_shaft(torque_Nm, rpm):\n    """Shaft power P = T * omega (Watts)"""\n    omega = 2 * PI * rpm / 60\n    return torque_Nm * omega\n\ndL = thermal_expansion(5000, 80, 12e-6)\nP  = power_shaft(120, 1450)\nprint(f"Mech    | dL = {dL:.3f} mm  |  P = {P/1000:.2f} kW")\n\n# ── Electrical Engineering ─────────────────────\ndef ohms_law(find, a, b):\n    if find == "V": return a * b\n    if find == "I": return a / b\n    if find == "R": return a / b\n\ndef power_electrical(V, I):\n    return V * I\n\nV = ohms_law("V", 2.5, 47)\nP_elec = power_electrical(230, 13)\nprint(f"Elec    | V = {V:.1f} V  |  P = {P_elec:.0f} W")\n\n# ── Chemical Engineering (your turn!) ──────────\ndef ideal_gas_pressure(n, T, V):\n    """PV = nRT  =>  P = nRT/V"""\n    R = 8.314\n    return (n * R * T) / V\n\nP_gas = ideal_gas_pressure(2, 300, 0.05)\nprint(f"Chem    | P = {P_gas:.2f} Pa  ({P_gas/1000:.3f} kPa)")'
+  },
+
+  // ══════════════════════════════════════════════════════════
+  // MODULE 12 — The Universal Solver (Capstone)
+  // ══════════════════════════════════════════════════════════
+  {
+    id: 'eng_capstone',
+    icon: '🌐',
+    title: 'The Universal Solver (Capstone)',
+    tag: 'challenge',
+    tagLabel: 'Challenge',
+    duration: '25 min',
+    completed: false,
+    content: `
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
+        <div style="font-size:36px;">🌐</div>
+        <div>
+          <span class="lesson-tag challenge">Challenge</span>
+          <h2 style="margin:6px 0 0;">The Universal Solver — Capstone Project</h2>
+        </div>
+      </div>
+      <p>This is your <strong>engineering capstone</strong>. You will combine every skill — variables, constants, conditionals, loops, and functions — into a single multi-branch engineering solver.</p>
+      <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:16px;margin:16px 0;">
+        <h3 style="color:#14532d;font-size:15px;margin:0 0 10px;">🎯 Mission Brief</h3>
+        <p style="font-size:13.5px;color:#166534;margin:0 0 8px;">Build a <strong>Universal Engineering Solver</strong> that:</p>
+        <ol style="font-size:13.5px;color:#166534;line-height:2.2;padding-left:20px;margin:0;">
+          <li>Stores a dictionary of engineering problems (one per discipline)</li>
+          <li>Each problem has known values and one <em>unknown</em> to solve for</li>
+          <li>Loops through all problems automatically</li>
+          <li>Uses a function for each discipline's formula</li>
+          <li>Applies an if/else safety check on every result</li>
+          <li>Prints a formatted multi-branch engineering report</li>
+        </ol>
+      </div>
+      <h3>Architecture — The Data Structure</h3>
+      <pre><span class="kw">problems</span> = [
+    {
+        <span class="str">"branch"</span>  : <span class="str">"Civil"</span>,
+        <span class="str">"formula"</span> : <span class="str">"Safety Factor"</span>,
+        <span class="str">"inputs"</span>  : {<span class="str">"ultimate"</span>: <span class="num">480</span>, <span class="str">"applied"</span>: <span class="num">160</span>},
+        <span class="str">"limit"</span>   : <span class="num">2.5</span>,
+        <span class="str">"unit"</span>    : <span class="str">"—"</span>
+    },
+    {
+        <span class="str">"branch"</span>  : <span class="str">"Mechanical"</span>,
+        <span class="str">"formula"</span> : <span class="str">"Shaft Power"</span>,
+        <span class="str">"inputs"</span>  : {<span class="str">"torque"</span>: <span class="num">95</span>, <span class="str">"rpm"</span>: <span class="num">960</span>},
+        <span class="str">"limit"</span>   : <span class="num">5000</span>,
+        <span class="str">"unit"</span>    : <span class="str">"W"</span>
+    },
+    <span class="cm"># ... add Electrical and Chemical entries ...</span>
+]</pre>
+      <h3>The Solver Loop Pattern</h3>
+      <pre><span class="kw">for</span> prob <span class="kw">in</span> problems:
+    result = <span class="fn">solve</span>(prob[<span class="str">"branch"</span>], prob[<span class="str">"inputs"</span>])
+    status = <span class="str">"PASS ✅"</span> <span class="kw">if</span> result >= prob[<span class="str">"limit"</span>] <span class="kw">else</span> <span class="str">"REVIEW ⚠️"</span>
+    <span class="fn">print</span>(<span class="str">f"{prob['branch']:<12} {prob['formula']:<18} {result:>8.2f} {prob['unit']}  {status}"</span>)</pre>
+      <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:14px;margin:16px 0;">
+        <p style="font-size:13px;color:#1e40af;margin:0;font-weight:500;">💡 The Inline Conditional (Ternary)</p>
+        <p style="font-size:13px;color:#1e40af;margin:6px 0 0;">Python lets you write simple if/else in one line:<br>
+        <code>label = "PASS" if result > limit else "FAIL"</code><br>
+        Perfect for assigning labels inside a loop!</p>
+      </div>
+      <div class="hint-box" style="margin-top:16px;">
+        🏆 <strong>Grand Challenge:</strong> Complete the starter code. Add the Electrical problem (V=IR, solve for R given V=230V, I=8A, check R &gt; 20Ω) and the Chemical problem (PV=nRT, solve for T given P=101325 Pa, V=0.025 m³, n=1 mol, check T between 270–330 K). Print the full four-branch report.
+      </div>
+    `,
+    starterCode: '# Module 12 — The Universal Solver (Capstone)\n# Combine ALL skills into one multi-branch engineering report\n\nPI = 3.14159265\nR_gas = 8.314\n\ndef solve_civil(inp):\n    """Safety Factor = ultimate / applied"""\n    return inp["ultimate"] / inp["applied"]\n\ndef solve_mechanical(inp):\n    """Shaft power P = T * omega"""\n    omega = 2 * PI * inp["rpm"] / 60\n    return inp["torque"] * omega\n\ndef solve_electrical(inp):\n    """Ohms law: R = V / I"""\n    return inp["V"] / inp["I"]\n\ndef solve_chemical(inp):\n    """Ideal gas: T = PV / nR"""\n    return (inp["P"] * inp["V"]) / (inp["n"] * R_gas)\n\nproblems = [\n    {"branch": "Civil",      "formula": "Safety Factor", "inputs": {"ultimate": 480, "applied": 160}, "limit": 2.5,   "above": True, "unit": ""},\n    {"branch": "Mechanical", "formula": "Shaft Power",   "inputs": {"torque": 95, "rpm": 960},        "limit": 5000,  "above": True, "unit": "W"},\n    {"branch": "Electrical", "formula": "Resistance",    "inputs": {"V": 230, "I": 8},                "limit": 20,    "above": True, "unit": "Ohm"},\n    {"branch": "Chemical",   "formula": "Temperature",   "inputs": {"P": 101325, "V": 0.025, "n": 1.0}, "limit": 270, "above": True, "unit": "K"},\n]\n\ndef solve(branch, inputs):\n    if branch == "Civil":      return solve_civil(inputs)\n    if branch == "Mechanical": return solve_mechanical(inputs)\n    if branch == "Electrical": return solve_electrical(inputs)\n    if branch == "Chemical":   return solve_chemical(inputs)\n    return 0\n\nprint("=" * 58)\nprint("  SHIVA\'s UNIVERSAL ENGINEERING SOLVER")\nprint("=" * 58)\nprint("  Branch        Formula            Result     Unit  Status")\nprint("-" * 58)\nfor prob in problems:\n    result = solve(prob["branch"], prob["inputs"])\n    passed = result >= prob["limit"] if prob["above"] else result <= prob["limit"]\n    status = "PASS OK" if passed else "REVIEW"\n    br = prob["branch"]\n    fm = prob["formula"]\n    un = prob["unit"]\n    print(f"  {br:<13} {fm:<18} {result:>9.3f}  {un:<5} {status}")\nprint("=" * 58)\nprint("  End of report — all branches analysed.")\nprint("=" * 58)'
   }
 ];
 
@@ -926,12 +1260,25 @@ const COACH_RESPONSES = {
   error: ["Errors are your friends — they tell you exactly what went wrong! What does the last line of the error message say?", "Look at the line number in the error. What's on that line?"],
   list: ["Lists are ordered! If the first item is at index 0, what index would the 5th item be at?"],
   if: ["What condition needs to be True for that block to run? Try writing it in plain English first."],
+  // ── Engineering-specific coach hints ──
+  constant: ["In engineering, why is it better to define <code>g = 9.81</code> once at the top rather than typing 9.81 every time in your formula?", "If g = 9.81 m/s² on Earth, how would you adapt your code to run the same simulation on the Moon (g = 1.62)?"],
+  precision: ["Why do you think 0.1 + 0.2 doesn't equal exactly 0.3 in Python? Hint: think about how computers store numbers internally.", "When would a rounding error of 0.000000001 matter — in everyday shopping, or in aerospace trajectory calculations?"],
+  safety: ["A safety factor of 2.0 means the structure can take twice the applied load before failure. What real-world events might make you choose SF = 3.5 instead of 2.0?", "In your safety factor check, what happens if <code>applied_load</code> is zero? How would an engineer defend against that in their code?"],
+  formula: ["What does the docstring (the triple-quoted string) inside your function tell other engineers who use your library?", "If you wanted to add a Hydraulics function for pipe flow (Darcy-Weisbach), what parameters would it need? Think before you code."],
+  capstone: ["Before writing any code, can you draw the data flow? Which function needs to run first, and what does it hand off to the next?", "Your solver dispatches to different functions based on <code>branch</code>. What Python structure could replace the chain of if/elif statements to make it more elegant?"],
+  units: ["What units is your answer in? Engineering bugs are often unit mismatches — did you mix mm and m, or kN and N?", "Try tracing the units through your formula: if M is in N·mm and y is in mm and I is in mm⁴, what are the units of M*y/I?"],
 };
 
 function getCoachResponse(msg) {
   const lower = msg.toLowerCase();
   if (lower.includes('error') || lower.includes('wrong') || lower.includes('not work')) return pick(COACH_RESPONSES.error);
-  if (lower.includes('loop') || lower.includes('for') || lower.includes('while')) return pick(COACH_RESPONSES.loop);
+  if (lower.includes('constant') || lower.includes('pi') || lower.includes('gravity') || lower.includes('planck')) return pick(COACH_RESPONSES.constant);
+  if (lower.includes('precision') || lower.includes('float') || lower.includes('decimal') || lower.includes('round')) return pick(COACH_RESPONSES.precision);
+  if (lower.includes('safety') || lower.includes('factor') || lower.includes('stress') || lower.includes('load')) return pick(COACH_RESPONSES.safety);
+  if (lower.includes('formula') || lower.includes('library') || lower.includes('docstring') || lower.includes('ohm') || lower.includes('thermal')) return pick(COACH_RESPONSES.formula);
+  if (lower.includes('capstone') || lower.includes('solver') || lower.includes('universal') || lower.includes('dispatcher')) return pick(COACH_RESPONSES.capstone);
+  if (lower.includes('unit') || lower.includes('mpa') || lower.includes('kn') || lower.includes('mm')) return pick(COACH_RESPONSES.units);
+  if (lower.includes('loop') || lower.includes('for') || lower.includes('while') || lower.includes('trial') || lower.includes('lab')) return pick(COACH_RESPONSES.loop);
   if (lower.includes('function') || lower.includes('def') || lower.includes('return')) return pick(COACH_RESPONSES.function);
   if (lower.includes('variable') || lower.includes('assign') || lower.includes('=')) return pick(COACH_RESPONSES.variable);
   if (lower.includes('hello') || lower.includes('print') || lower.includes('first')) return pick(COACH_RESPONSES.hello);
