@@ -1,0 +1,2818 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SHIVA's Setu-Python — Zero to Hero</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      fontFamily: {
+        sans: ['"DM Sans"', '"FS Me"', '"Segoe UI"', 'system-ui', 'sans-serif'],
+        mono: ['"DM Mono"', '"Fira Code"', 'monospace']
+      },
+      colors: {
+        setu: {
+          50: '#f0f7ff',
+          100: '#e0effe',
+          200: '#baddfd',
+          300: '#7dc3fc',
+          400: '#38a3f8',
+          500: '#0e86e8',
+          600: '#0268c6',
+          700: '#0254a0',
+          800: '#064784',
+          900: '#0b3d6e',
+        },
+        slate: {
+          50: '#f8fafc',
+          75: '#f3f6f9',
+        }
+      }
+    }
+  }
+}
+</script>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: "DM Sans", "FS Me", "Segoe UI", system-ui, sans-serif;
+    background: #f3f6f9;
+    color: #1e293b;
+    min-height: 100vh;
+    margin: 0;
+  }
+
+  /* ── Scrollbars ── */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 99px; }
+
+  /* ── Branding header ── */
+  #app-header {
+    background: #ffffff;
+    border-bottom: 1px solid #e2e8f0;
+    padding: 0 1.5rem;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  }
+  .logo-mark {
+    background: linear-gradient(135deg, #0e86e8, #0254a0);
+    color: white;
+    font-weight: 600;
+    font-size: 13px;
+    letter-spacing: 0.5px;
+    padding: 4px 10px;
+    border-radius: 6px;
+  }
+
+  /* ── Sidebar ── */
+  #sidebar {
+    width: 260px;
+    min-width: 260px;
+    background: #fff;
+    border-right: 1px solid #e2e8f0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* ── Module list ── */
+  .module-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 13.5px;
+    color: #475569;
+    transition: background 0.15s, color 0.15s;
+    border: none;
+    background: transparent;
+    text-align: left;
+    width: 100%;
+  }
+  .module-item:hover { background: #f0f7ff; color: #0268c6; }
+  .module-item.active { background: #e0effe; color: #0254a0; font-weight: 500; }
+  .module-icon {
+    width: 28px; height: 28px;
+    border-radius: 7px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px;
+    flex-shrink: 0;
+    background: #f1f5f9;
+  }
+  .module-item.active .module-icon { background: #baddfd; }
+
+  /* ── Code editor ── */
+  #code-editor {
+    font-family: "DM Mono", monospace;
+    font-size: 13.5px;
+    line-height: 1.7;
+    background: #0f172a;
+    color: #e2e8f0;
+    border: none;
+    outline: none;
+    resize: none;
+    width: 100%;
+    padding: 16px;
+    height: 100%;
+    tab-size: 4;
+    border-radius: 0;
+  }
+  #code-output {
+    font-family: "DM Mono", monospace;
+    font-size: 13px;
+    line-height: 1.6;
+    background: #020617;
+    color: #4ade80;
+    padding: 14px 16px;
+    min-height: 80px;
+    max-height: 180px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    border-top: 1px solid #1e293b;
+  }
+
+  /* ── Lesson content ── */
+  .lesson-content h2 { font-size: 20px; font-weight: 600; color: #0f172a; margin: 0 0 12px; }
+  .lesson-content h3 { font-size: 15px; font-weight: 600; color: #1e293b; margin: 20px 0 8px; }
+  .lesson-content p { font-size: 14px; line-height: 1.75; color: #475569; margin: 0 0 12px; }
+  .lesson-content code {
+    font-family: "DM Mono", monospace;
+    font-size: 12.5px;
+    background: #f0f7ff;
+    color: #0254a0;
+    padding: 2px 6px;
+    border-radius: 4px;
+    border: 1px solid #baddfd;
+  }
+  .lesson-content pre {
+    background: #0f172a;
+    color: #e2e8f0;
+    padding: 14px 16px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-family: "DM Mono", monospace;
+    overflow-x: auto;
+    margin: 12px 0;
+    line-height: 1.65;
+  }
+  .lesson-content pre code {
+    background: none; border: none; padding: 0; color: inherit; font-size: inherit;
+  }
+  .lesson-tag {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.4px;
+    padding: 2px 8px;
+    border-radius: 99px;
+    text-transform: uppercase;
+  }
+  .lesson-tag.beginner { background: #dcfce7; color: #166534; }
+  .lesson-tag.intermediate { background: #fef9c3; color: #854d0e; }
+  .lesson-tag.challenge { background: #fee2e2; color: #991b1b; }
+
+  /* ── Coach chat ── */
+  #coach-panel {
+    width: 300px;
+    min-width: 300px;
+    background: #fff;
+    border-left: 1px solid #e2e8f0;
+    display: flex;
+    flex-direction: column;
+  }
+  .chat-bubble {
+    padding: 10px 13px;
+    border-radius: 12px;
+    font-size: 13px;
+    line-height: 1.6;
+    max-width: 90%;
+  }
+  .chat-bubble.coach {
+    background: #f0f7ff;
+    color: #1e40af;
+    border-bottom-left-radius: 4px;
+    align-self: flex-start;
+  }
+  .chat-bubble.user {
+    background: #e0effe;
+    color: #0f172a;
+    border-bottom-right-radius: 4px;
+    align-self: flex-end;
+  }
+  #chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  #coach-input {
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 9px 12px;
+    font-size: 13px;
+    font-family: inherit;
+    outline: none;
+    width: 100%;
+    transition: border-color 0.15s;
+  }
+  #coach-input:focus { border-color: #38a3f8; box-shadow: 0 0 0 3px #baddfd55; }
+
+  /* ── Upload zone ── */
+  #upload-zone {
+    border: 2px dashed #baddfd;
+    border-radius: 12px;
+    background: #f0f7ff;
+    transition: background 0.2s, border-color 0.2s;
+    cursor: pointer;
+  }
+  #upload-zone:hover, #upload-zone.dragover {
+    background: #e0effe;
+    border-color: #38a3f8;
+  }
+
+  /* ── Run button ── */
+  .btn-run {
+    background: #0e86e8;
+    color: white;
+    border: none;
+    padding: 7px 18px;
+    border-radius: 7px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: inherit;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: background 0.15s, transform 0.1s;
+  }
+  .btn-run:hover { background: #0268c6; }
+  .btn-run:active { transform: scale(0.97); }
+  .btn-clear {
+    background: transparent;
+    color: #64748b;
+    border: 1px solid #e2e8f0;
+    padding: 7px 14px;
+    border-radius: 7px;
+    font-size: 13px;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background 0.15s;
+  }
+  .btn-clear:hover { background: #f8fafc; }
+
+  /* ── Section tabs ── */
+  .tab-btn {
+    padding: 6px 16px;
+    border-radius: 7px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    border: 1px solid transparent;
+    background: transparent;
+    color: #64748b;
+    font-family: inherit;
+    transition: all 0.15s;
+  }
+  .tab-btn.active {
+    background: #e0effe;
+    color: #0254a0;
+    border-color: #baddfd;
+  }
+  .tab-btn:hover:not(.active) { background: #f8fafc; color: #1e293b; }
+
+  /* ── Progress bar ── */
+  .progress-bar {
+    height: 4px;
+    background: #e2e8f0;
+    border-radius: 99px;
+    overflow: hidden;
+    margin: 6px 0;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #38a3f8, #0254a0);
+    border-radius: 99px;
+    transition: width 0.5s ease;
+  }
+
+  /* ── Tooltip hint ── */
+  .hint-box {
+    background: #fffbeb;
+    border: 1px solid #fcd34d;
+    border-left: 3px solid #f59e0b;
+    border-radius: 8px;
+    padding: 10px 13px;
+    font-size: 13px;
+    color: #78350f;
+    line-height: 1.6;
+  }
+
+  /* ── Responsive ── */
+  @media (max-width: 900px) {
+    #coach-panel { display: none !important; }
+  }
+  @media (max-width: 640px) {
+    #sidebar { display: none !important; }
+    #mobile-menu-btn { display: flex !important; }
+  }
+
+  /* ── Typing animation ── */
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+  .typing-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: #38a3f8; animation: blink 1s ease infinite; margin: 0 2px; }
+  .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+  .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+  /* ── Footer ── */
+  #app-footer {
+    background: #fff;
+    border-top: 1px solid #e2e8f0;
+    padding: 10px 24px;
+    font-size: 12px;
+    color: #94a3b8;
+    text-align: center;
+    letter-spacing: 0.2px;
+  }
+
+  /* Syntax highlighting helpers */
+  .kw { color: #c792ea; }
+  .fn { color: #82aaff; }
+  .str { color: #c3e88d; }
+  .num { color: #f78c6c; }
+  .cm { color: #546e7a; font-style: italic; }
+
+  /* Step badge */
+  .step-badge {
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    background: #0e86e8;
+    color: white;
+    font-size: 12px;
+    font-weight: 600;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+
+  /* Loading overlay */
+  #loading-overlay {
+    position: fixed; inset: 0;
+    background: rgba(255,255,255,0.88);
+    backdrop-filter: blur(4px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 999;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .spinner {
+    width: 36px; height: 36px;
+    border: 3px solid #baddfd;
+    border-top-color: #0e86e8;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* PDF-generated module */
+  .pdf-module-card {
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-left: 3px solid #0e86e8;
+    border-radius: 8px;
+    padding: 12px 14px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    transition: box-shadow 0.15s;
+  }
+  .pdf-module-card:hover { box-shadow: 0 2px 12px rgba(14,134,232,0.1); }
+  .pdf-module-card h4 { font-size: 14px; font-weight: 600; color: #0f172a; margin: 0 0 4px; }
+  .pdf-module-card p { font-size: 12.5px; color: #64748b; margin: 0; line-height: 1.5; }
+</style>
+</head>
+<body>
+
+<!-- Loading overlay -->
+<div id="loading-overlay">
+  <div class="spinner"></div>
+  <p style="font-size:14px;color:#475569;font-weight:500;">Processing your PDF…</p>
+  <p id="loading-msg" style="font-size:12px;color:#94a3b8;">Extracting lesson content</p>
+</div>
+
+<!-- ═══════════════════════ HEADER ═══════════════════════ -->
+<header id="app-header">
+  <div style="display:flex;align-items:center;gap:12px;">
+    <button id="mobile-menu-btn" style="display:none;border:none;background:none;cursor:pointer;padding:4px;" onclick="toggleSidebar()">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#475569" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
+    <span class="logo-mark">SETU</span>
+    <div>
+      <span style="font-weight:600;font-size:15px;color:#0f172a;">SHIVA's Setu-Python</span>
+      <span style="font-size:12px;color:#94a3b8;margin-left:8px;">Zero-to-Hero Learning Platform</span>
+    </div>
+  </div>
+  <div style="display:flex;align-items:center;gap:10px;">
+    <div id="progress-indicator" style="display:flex;align-items:center;gap:8px;">
+      <span style="font-size:12px;color:#64748b;">Progress</span>
+      <div style="width:80px;" class="progress-bar"><div class="progress-fill" id="global-progress" style="width:0%"></div></div>
+      <span id="progress-text" style="font-size:12px;color:#0254a0;font-weight:500;">0%</span>
+    </div>
+    <button onclick="showUploadModal()" style="background:#f0f7ff;border:1px solid #baddfd;color:#0254a0;padding:6px 14px;border-radius:7px;font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:6px;">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      Upload PDF
+    </button>
+  </div>
+</header>
+
+<!-- ═══════════════════════ MAIN LAYOUT ═══════════════════════ -->
+<div style="display:flex;height:calc(100vh - 56px - 40px);overflow:hidden;">
+
+  <!-- ───── LEFT SIDEBAR: Curriculum ───── -->
+  <aside id="sidebar">
+    <div style="padding:14px;border-bottom:1px solid #e2e8f0;">
+      <p style="font-size:11px;font-weight:600;letter-spacing:0.8px;text-transform:uppercase;color:#94a3b8;margin:0 0 10px;">Learning Map</p>
+      <div id="upload-zone" onclick="showUploadModal()" style="padding:16px;text-align:center;">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#38a3f8" stroke-width="1.5" style="margin:0 auto 8px;display:block;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+        <p style="font-size:12px;color:#0254a0;font-weight:500;margin:0 0 2px;">Upload Python PDF</p>
+        <p style="font-size:11px;color:#94a3b8;margin:0;">Auto-generate curriculum</p>
+      </div>
+    </div>
+
+    <div style="padding:10px 10px 10px;overflow-y:auto;flex:1;" id="module-list">
+      <!-- populated by JS -->
+    </div>
+
+    <div style="padding:12px;border-top:1px solid #e2e8f0;background:#f8fafc;">
+      <p style="font-size:11px;color:#94a3b8;margin:0 0 6px;text-align:center;">Your streak</p>
+      <div style="display:flex;gap:4px;justify-content:center;" id="streak-dots"></div>
+    </div>
+  </aside>
+
+  <!-- ───── CENTRE: Lesson + Editor ───── -->
+  <main style="flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0;">
+
+    <!-- Tab bar -->
+    <div style="background:#fff;border-bottom:1px solid #e2e8f0;padding:8px 16px;display:flex;align-items:center;gap:8px;">
+      <button class="tab-btn active" id="tab-lesson" onclick="switchTab('lesson')">📖 Lesson</button>
+      <button class="tab-btn" id="tab-playground" onclick="switchTab('playground')">⚡ Playground</button>
+      <div style="margin-left:auto;display:flex;align-items:center;gap:8px;">
+        <span id="current-module-label" style="font-size:12px;color:#64748b;"></span>
+      </div>
+    </div>
+
+    <!-- Lesson panel -->
+    <div id="lesson-panel" style="flex:1;overflow-y:auto;padding:24px 28px;background:#f8fafc;">
+      <div class="lesson-content" id="lesson-body">
+        <!-- populated by JS -->
+      </div>
+    </div>
+
+    <!-- Playground panel -->
+    <div id="playground-panel" style="flex:1;display:none;flex-direction:column;overflow:hidden;">
+      <div style="background:#fff;border-bottom:1px solid #e2e8f0;padding:8px 14px;display:flex;align-items:center;gap:8px;">
+        <span style="font-size:12px;font-weight:500;color:#475569;">🐍 Python Sandbox</span>
+        <div style="margin-left:auto;display:flex;gap:8px;">
+          <button class="btn-clear" onclick="clearOutput()">Clear Output</button>
+          <button class="btn-run" onclick="runCode()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="white"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            Run Code
+          </button>
+        </div>
+      </div>
+      <div style="flex:1;display:flex;flex-direction:column;overflow:hidden;">
+        <div style="flex:1;overflow:hidden;position:relative;">
+          <textarea id="code-editor" spellcheck="false" placeholder="# Write your Python code here...
+print('Hello, World!')"></textarea>
+        </div>
+        <div style="background:#1e293b;padding:6px 14px;display:flex;align-items:center;justify-content:space-between;">
+          <span style="font-size:11px;color:#475569;font-family:'DM Mono',monospace;">OUTPUT</span>
+          <span id="run-status" style="font-size:11px;color:#64748b;"></span>
+        </div>
+        <div id="code-output">Ready. Click ▶ Run Code to execute your program.</div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ───── RIGHT SIDEBAR: Coach ───── -->
+  <aside id="coach-panel">
+    <div style="padding:14px;border-bottom:1px solid #e2e8f0;background:#f8fafc;">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div style="width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#0e86e8,#0254a0);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/></svg>
+        </div>
+        <div>
+          <p style="font-size:13.5px;font-weight:600;color:#0f172a;margin:0;">Scaffolding Coach</p>
+          <p style="font-size:11.5px;color:#22c55e;margin:0;display:flex;align-items:center;gap:4px;">
+            <span style="width:6px;height:6px;border-radius:50%;background:#22c55e;display:inline-block;"></span> Active · Guiding mode
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div id="chat-messages">
+      <!-- populated by JS -->
+    </div>
+
+    <div style="padding:12px;border-top:1px solid #e2e8f0;background:#f8fafc;">
+      <div style="display:flex;gap:8px;">
+        <input type="text" id="coach-input" placeholder="Ask the coach a question…" onkeydown="handleCoachKey(event)">
+        <button onclick="sendToCoach()" style="background:#0e86e8;border:none;border-radius:8px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="white"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        </button>
+      </div>
+      <p style="font-size:11px;color:#94a3b8;margin:6px 0 0;text-align:center;">Coach gives hints, not answers ✦</p>
+    </div>
+  </aside>
+
+</div>
+
+<!-- ═══════════════════════ FOOTER ═══════════════════════ -->
+<footer id="app-footer">
+  Crafted by <strong style="color:#0254a0;">Dr Shivkumar Math</strong> · SHIVA's Digital Ecosystem, All Rights Reserved © 2026
+</footer>
+
+<!-- ═══════════════════════ UPLOAD MODAL ═══════════════════════ -->
+<div id="upload-modal" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.5);backdrop-filter:blur(3px);z-index:100;align-items:center;justify-content:center;">
+  <div style="background:#fff;border-radius:16px;padding:28px;max-width:480px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,0.15);">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;">
+      <div>
+        <h3 style="font-size:18px;font-weight:600;color:#0f172a;margin:0 0 4px;">Upload Python PDF</h3>
+        <p style="font-size:13px;color:#64748b;margin:0;">We'll auto-generate a structured curriculum from your document.</p>
+      </div>
+      <button onclick="closeUploadModal()" style="border:none;background:none;cursor:pointer;color:#94a3b8;font-size:20px;line-height:1;padding:0;">×</button>
+    </div>
+
+    <div id="modal-upload-zone" onclick="document.getElementById('pdf-file-input').click()"
+         ondragover="handleDragOver(event)" ondrop="handleDrop(event)" ondragleave="handleDragLeave(event)"
+         style="border:2px dashed #baddfd;border-radius:12px;background:#f0f7ff;padding:32px;text-align:center;cursor:pointer;transition:all 0.2s;">
+      <div style="width:48px;height:48px;border-radius:12px;background:#e0effe;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0e86e8" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      </div>
+      <p style="font-size:14px;font-weight:500;color:#0f172a;margin:0 0 4px;">Drop your PDF here</p>
+      <p style="font-size:12.5px;color:#64748b;margin:0;">or click to browse files</p>
+    </div>
+    <input type="file" id="pdf-file-input" accept=".pdf" style="display:none;" onchange="handleFileSelect(event)">
+
+    <div style="margin-top:16px;padding:12px;background:#f8fafc;border-radius:8px;border:1px solid #e2e8f0;">
+      <p style="font-size:12.5px;color:#64748b;margin:0;line-height:1.6;">
+        <strong style="color:#0f172a;">How it works:</strong> pdf.js extracts the text, then we analyse headings, code blocks, and topic keywords to build a structured lesson map automatically.
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════ JAVASCRIPT ═══════════════════════ -->
+<script>
+// ─── PDF.js config ───────────────────────────────────────────
+pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+// ─── Default Curriculum Data ─────────────────────────────────
+const DEFAULT_MODULES = [
+  {
+    id: 'welcome',
+    icon: '🚀',
+    title: 'Welcome to Python',
+    tag: 'beginner',
+    tagLabel: 'Beginner',
+    duration: '5 min',
+    completed: false,
+    content: `
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
+        <div style="font-size:36px;">🐍</div>
+        <div>
+          <span class="lesson-tag beginner">Beginner</span>
+          <h2 style="margin:6px 0 0;">Welcome to Python!</h2>
+        </div>
+      </div>
+      <p>Welcome to <strong>SHIVA's Setu-Python</strong> — your bridge from absolute beginner to confident Python programmer. This platform will guide you step-by-step.</p>
+      <div class="hint-box" style="margin:16px 0;">
+        💡 <strong>Getting Started:</strong> Click ⚡ <em>Playground</em> tab above, then type <code>print("Hello, World!")</code> and hit <strong>Run Code</strong>. That's your very first Python program!
+      </div>
+      <h3>What is Python?</h3>
+      <p>Python is one of the world's most popular programming languages. It reads almost like English, making it perfect for beginners. Here's what you can build with it:</p>
+      <ul style="font-size:14px;color:#475569;line-height:2;padding-left:20px;">
+        <li>Websites and web apps (Instagram uses Python!)</li>
+        <li>Data science and machine learning</li>
+        <li>Automation scripts that save hours of work</li>
+        <li>Games and creative projects</li>
+      </ul>
+      <h3>Your Very First Program</h3>
+      <p>Every programmer's journey starts with "Hello, World!" — a tiny program that just displays a message. In Python, it's beautifully simple:</p>
+      <pre><span class="fn">print</span>(<span class="str">"Hello, World!"</span>)</pre>
+      <p>Try it now! Click the <strong>⚡ Playground</strong> tab and type this code, then press <strong>Run Code</strong>.</p>
+      <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:14px;margin-top:16px;">
+        <p style="font-size:13.5px;color:#14532d;margin:0;font-weight:500;">✅ Challenge: Can you change the message to say your own name?</p>
+        <p style="font-size:13px;color:#166534;margin:6px 0 0;">Try: <code>print("Hello, Shiva!")</code></p>
+      </div>
+    `,
+    starterCode: '# Welcome to Python!\n# Try running your first program below:\n\nprint("Hello, World!")\n\n# Now try changing the message — make it say your name!'
+  },
+  {
+    id: 'variables',
+    icon: '📦',
+    title: 'Variables & Data Types',
+    tag: 'beginner',
+    tagLabel: 'Beginner',
+    duration: '10 min',
+    completed: false,
+    content: `
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
+        <div style="font-size:36px;">📦</div>
+        <div>
+          <span class="lesson-tag beginner">Beginner</span>
+          <h2 style="margin:6px 0 0;">Variables & Data Types</h2>
+        </div>
+      </div>
+      <p>A <strong>variable</strong> is like a labelled box where you can store information. You give the box a name, then put something inside it.</p>
+      <pre><span class="cm"># Creating variables is simple:</span>
+<span class="kw">name</span> = <span class="str">"Alice"</span>
+<span class="kw">age</span> = <span class="num">25</span>
+<span class="kw">height</span> = <span class="num">1.65</span>
+<span class="kw">is_student</span> = <span class="kw">True</span>
+
+<span class="fn">print</span>(<span class="kw">name</span>)    <span class="cm"># Alice</span>
+<span class="fn">print</span>(<span class="kw">age</span>)     <span class="cm"># 25</span></pre>
+      <h3>The 4 Core Data Types</h3>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0;">
+        <div style="background:#f0f7ff;border-radius:8px;padding:12px;border:1px solid #baddfd;">
+          <p style="font-size:12px;font-weight:600;color:#0254a0;margin:0 0 4px;text-transform:uppercase;letter-spacing:0.5px;">String (str)</p>
+          <code>"Hello"</code>
+          <p style="font-size:12px;color:#64748b;margin:6px 0 0;">Text — always in quotes</p>
+        </div>
+        <div style="background:#f0fdf4;border-radius:8px;padding:12px;border:1px solid #bbf7d0;">
+          <p style="font-size:12px;font-weight:600;color:#166534;margin:0 0 4px;text-transform:uppercase;letter-spacing:0.5px;">Integer (int)</p>
+          <code>42</code>
+          <p style="font-size:12px;color:#64748b;margin:6px 0 0;">Whole numbers</p>
+        </div>
+        <div style="background:#fffbeb;border-radius:8px;padding:12px;border:1px solid #fcd34d;">
+          <p style="font-size:12px;font-weight:600;color:#854d0e;margin:0 0 4px;text-transform:uppercase;letter-spacing:0.5px;">Float</p>
+          <code>3.14</code>
+          <p style="font-size:12px;color:#64748b;margin:6px 0 0;">Decimal numbers</p>
+        </div>
+        <div style="background:#fdf4ff;border-radius:8px;padding:12px;border:1px solid #e9d5ff;">
+          <p style="font-size:12px;font-weight:600;color:#6b21a8;margin:0 0 4px;text-transform:uppercase;letter-spacing:0.5px;">Boolean (bool)</p>
+          <code>True / False</code>
+          <p style="font-size:12px;color:#64748b;margin:6px 0 0;">Yes or No values</p>
+        </div>
+      </div>
+      <h3>String Magic</h3>
+      <p>You can join strings with <code>+</code> and repeat them with <code>*</code>:</p>
+      <pre><span class="kw">first</span> = <span class="str">"Shiva"</span>
+<span class="kw">last</span> = <span class="str">"Math"</span>
+<span class="fn">print</span>(<span class="kw">first</span> + <span class="str">" "</span> + <span class="kw">last</span>)  <span class="cm"># Shiva Math</span>
+<span class="fn">print</span>(<span class="str">"Ha"</span> * <span class="num">3</span>)               <span class="cm"># HaHaHa</span></pre>
+      <div class="hint-box" style="margin-top:16px;">
+        🎯 <strong>Practice:</strong> Create variables for your name, age, and favourite colour. Print a sentence using all three!
+      </div>
+    `,
+    starterCode: '# Variables and Data Types\n# Create some variables about yourself:\n\nname = "Your Name"\nage = 0\nfavourite_colour = "blue"\n\n# Print a sentence using your variables:\nprint("Hi! My name is", name)\nprint("I am", age, "years old")\nprint("My favourite colour is", favourite_colour)\n\n# Try using + to join strings:\nprint("Name: " + name)'
+  },
+  {
+    id: 'conditionals',
+    icon: '🔀',
+    title: 'If / Else Logic',
+    tag: 'beginner',
+    tagLabel: 'Beginner',
+    duration: '12 min',
+    completed: false,
+    content: `
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
+        <div style="font-size:36px;">🔀</div>
+        <div>
+          <span class="lesson-tag beginner">Beginner</span>
+          <h2 style="margin:6px 0 0;">If / Else Logic</h2>
+        </div>
+      </div>
+      <p>Programs need to make decisions — just like you do every day. <strong>If/else</strong> statements let your code choose what to do based on conditions.</p>
+      <pre><span class="kw">age</span> = <span class="num">18</span>
+
+<span class="kw">if</span> <span class="kw">age</span> >= <span class="num">18</span>:
+    <span class="fn">print</span>(<span class="str">"You can vote! 🗳️"</span>)
+<span class="kw">elif</span> <span class="kw">age</span> >= <span class="num">16</span>:
+    <span class="fn">print</span>(<span class="str">"Almost there!"</span>)
+<span class="kw">else</span>:
+    <span class="fn">print</span>(<span class="str">"Too young to vote."</span>)</pre>
+      <h3>⚠️ Indentation Matters!</h3>
+      <p>Python uses <strong>4 spaces</strong> (or 1 tab) to show what's inside an if block. This is called <em>indentation</em> and it's crucial — get it wrong, and Python will complain!</p>
+      <h3>Comparison Operators</h3>
+      <div style="background:#f8fafc;border-radius:8px;padding:14px;font-size:13px;border:1px solid #e2e8f0;margin:10px 0;">
+        <table style="width:100%;border-collapse:collapse;">
+          <tr style="border-bottom:1px solid #e2e8f0;"><td style="padding:6px 8px;font-family:'DM Mono',monospace;color:#0254a0;font-size:13px;">==</td><td style="padding:6px 8px;color:#475569;">Equal to</td></tr>
+          <tr style="border-bottom:1px solid #e2e8f0;"><td style="padding:6px 8px;font-family:'DM Mono',monospace;color:#0254a0;font-size:13px;">!=</td><td style="padding:6px 8px;color:#475569;">Not equal to</td></tr>
+          <tr style="border-bottom:1px solid #e2e8f0;"><td style="padding:6px 8px;font-family:'DM Mono',monospace;color:#0254a0;font-size:13px;">&gt; / &lt;</td><td style="padding:6px 8px;color:#475569;">Greater / less than</td></tr>
+          <tr><td style="padding:6px 8px;font-family:'DM Mono',monospace;color:#0254a0;font-size:13px;">&gt;= / &lt;=</td><td style="padding:6px 8px;color:#475569;">Greater/less than or equal</td></tr>
+        </table>
+      </div>
+      <div class="hint-box" style="margin-top:16px;">
+        🎯 <strong>Challenge:</strong> Write a program that checks a temperature value. If it's above 30, print "Hot day!". If it's between 15–30, print "Nice weather". Otherwise, print "Bring a jacket!"
+      </div>
+    `,
+    starterCode: '# If / Else Logic\n# Temperature checker:\n\ntemperature = 25\n\nif temperature > 30:\n    print("Hot day! ☀️")\nelif temperature >= 15:\n    print("Nice weather 😊")\nelse:\n    print("Bring a jacket! 🧥")\n\n# Try changing the temperature value and see what happens!\n# What happens at exactly 30? At 15?'
+  },
+  {
+    id: 'loops',
+    icon: '🔁',
+    title: 'Loops',
+    tag: 'beginner',
+    tagLabel: 'Beginner',
+    duration: '15 min',
+    completed: false,
+    content: `
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
+        <div style="font-size:36px;">🔁</div>
+        <div>
+          <span class="lesson-tag beginner">Beginner</span>
+          <h2 style="margin:6px 0 0;">Loops — Do Things Repeatedly</h2>
+        </div>
+      </div>
+      <p>Loops let you repeat code without writing it over and over. There are two types in Python: <code>for</code> loops and <code>while</code> loops.</p>
+      <h3>For Loops</h3>
+      <p>Use <code>for</code> when you know how many times to repeat:</p>
+      <pre><span class="cm"># Count from 1 to 5:</span>
+<span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="num">1</span>, <span class="num">6</span>):
+    <span class="fn">print</span>(<span class="str">f"Count: {i}"</span>)
+
+<span class="cm"># Loop through a list:</span>
+<span class="kw">fruits</span> = [<span class="str">"apple"</span>, <span class="str">"banana"</span>, <span class="str">"mango"</span>]
+<span class="kw">for</span> fruit <span class="kw">in</span> fruits:
+    <span class="fn">print</span>(<span class="str">f"I like {fruit}"</span>)</pre>
+      <h3>While Loops</h3>
+      <p>Use <code>while</code> when you repeat until a condition becomes False:</p>
+      <pre><span class="kw">count</span> = <span class="num">0</span>
+<span class="kw">while</span> <span class="kw">count</span> < <span class="num">3</span>:
+    <span class="fn">print</span>(<span class="str">f"Round {count + 1}"</span>)
+    <span class="kw">count</span> += <span class="num">1</span>   <span class="cm"># Don't forget this!</span></pre>
+      <div style="background:#fee2e2;border-radius:8px;padding:12px;margin:12px 0;border:1px solid #fca5a5;">
+        <p style="font-size:13px;color:#991b1b;margin:0;font-weight:500;">⚠️ Infinite Loop Warning</p>
+        <p style="font-size:12.5px;color:#b91c1c;margin:4px 0 0;">If you forget to update the condition variable in a while loop, it runs forever! Always make sure your loop has an exit condition.</p>
+      </div>
+      <div class="hint-box" style="margin-top:12px;">
+        🎯 <strong>Challenge:</strong> Write a loop that prints the 5-times table (5, 10, 15, … 50). Then try printing a pattern of stars using nested loops!
+      </div>
+    `,
+    starterCode: '# Loops in Python\n\n# 1. For loop — count to 10:\nfor i in range(1, 11):\n    print(i)\n\nprint("---")\n\n# 2. Loop through a list:\nfavourites = ["Python", "Mathematics", "Science"]\nfor subject in favourites:\n    print(f"I enjoy {subject}")\n\nprint("---")\n\n# 3. Five times table:\nfor i in range(1, 11):\n    print(f"5 x {i} = {5 * i}")'
+  },
+  {
+    id: 'functions',
+    icon: '⚙️',
+    title: 'Functions',
+    tag: 'intermediate',
+    tagLabel: 'Intermediate',
+    duration: '15 min',
+    completed: false,
+    content: `
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
+        <div style="font-size:36px;">⚙️</div>
+        <div>
+          <span class="lesson-tag intermediate">Intermediate</span>
+          <h2 style="margin:6px 0 0;">Functions — Reusable Code Blocks</h2>
+        </div>
+      </div>
+      <p>A <strong>function</strong> is a named block of code that does a specific job. You write it once and call it as many times as you need.</p>
+      <pre><span class="cm"># Define a function:</span>
+<span class="kw">def</span> <span class="fn">greet</span>(name):
+    <span class="fn">print</span>(<span class="str">f"Hello, {name}! Welcome to Python."</span>)
+
+<span class="cm"># Call it:</span>
+<span class="fn">greet</span>(<span class="str">"Shiva"</span>)   <span class="cm"># Hello, Shiva! Welcome to Python.</span>
+<span class="fn">greet</span>(<span class="str">"Alice"</span>)   <span class="cm"># Hello, Alice! Welcome to Python.</span></pre>
+      <h3>Returning Values</h3>
+      <p>Functions can send back a result using <code>return</code>:</p>
+      <pre><span class="kw">def</span> <span class="fn">add_numbers</span>(a, b):
+    <span class="kw">result</span> = a + b
+    <span class="kw">return</span> result
+
+<span class="kw">total</span> = <span class="fn">add_numbers</span>(<span class="num">10</span>, <span class="num">5</span>)
+<span class="fn">print</span>(<span class="str">f"10 + 5 = {total}"</span>)  <span class="cm"># 10 + 5 = 15</span></pre>
+      <h3>Default Parameters</h3>
+      <pre><span class="kw">def</span> <span class="fn">power</span>(base, exponent=<span class="num">2</span>):
+    <span class="kw">return</span> base ** exponent
+
+<span class="fn">print</span>(<span class="fn">power</span>(<span class="num">3</span>))      <span class="cm"># 9  (uses default: 3²)</span>
+<span class="fn">print</span>(<span class="fn">power</span>(<span class="num">2</span>, <span class="num">10</span>)) <span class="cm"># 1024 (2¹⁰)</span></pre>
+      <div class="hint-box" style="margin-top:16px;">
+        🎯 <strong>Challenge:</strong> Write a function called <code>calculate_area</code> that takes width and height as parameters and returns the area (width × height). Test it with different values!
+      </div>
+    `,
+    starterCode: '# Functions in Python\n\n# 1. Simple greeting function:\ndef greet(name):\n    print(f"Hello, {name}! 👋")\n\ngreet("Shiva")\ngreet("World")\n\n# 2. Function that returns a value:\ndef square(number):\n    return number ** 2\n\nprint(f"Square of 7 = {square(7)}")\nprint(f"Square of 12 = {square(12)}")\n\n# 3. Your turn — write a function:\n# def calculate_area(width, height):\n#     return ???\n\n# print(calculate_area(5, 3))   # should print 15'
+  },
+  {
+    id: 'lists',
+    icon: '📋',
+    title: 'Lists & Collections',
+    tag: 'intermediate',
+    tagLabel: 'Intermediate',
+    duration: '12 min',
+    completed: false,
+    content: `
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
+        <div style="font-size:36px;">📋</div>
+        <div>
+          <span class="lesson-tag intermediate">Intermediate</span>
+          <h2 style="margin:6px 0 0;">Lists & Collections</h2>
+        </div>
+      </div>
+      <p>A <strong>list</strong> stores multiple values in one variable. Think of it as a shopping list — ordered and changeable.</p>
+      <pre><span class="kw">colours</span> = [<span class="str">"red"</span>, <span class="str">"green"</span>, <span class="str">"blue"</span>]
+
+<span class="cm"># Access by index (starts at 0):</span>
+<span class="fn">print</span>(<span class="kw">colours</span>[<span class="num">0</span>])   <span class="cm"># red</span>
+<span class="fn">print</span>(<span class="kw">colours</span>[-<span class="num">1</span>])  <span class="cm"># blue (last item)</span>
+
+<span class="cm"># Add and remove:</span>
+<span class="kw">colours</span>.<span class="fn">append</span>(<span class="str">"yellow"</span>)
+<span class="kw">colours</span>.<span class="fn">remove</span>(<span class="str">"red"</span>)
+<span class="fn">print</span>(<span class="fn">len</span>(<span class="kw">colours</span>))   <span class="cm"># 3</span></pre>
+      <h3>Useful List Methods</h3>
+      <pre><span class="kw">numbers</span> = [<span class="num">3</span>, <span class="num">1</span>, <span class="num">4</span>, <span class="num">1</span>, <span class="num">5</span>, <span class="num">9</span>]
+<span class="kw">numbers</span>.<span class="fn">sort</span>()           <span class="cm"># [1, 1, 3, 4, 5, 9]</span>
+<span class="fn">print</span>(<span class="fn">sum</span>(<span class="kw">numbers</span>))     <span class="cm"># 23</span>
+<span class="fn">print</span>(<span class="fn">max</span>(<span class="kw">numbers</span>))     <span class="cm"># 9</span>
+<span class="fn">print</span>(<span class="fn">min</span>(<span class="kw">numbers</span>))     <span class="cm"># 1</span></pre>
+      <div class="hint-box" style="margin-top:16px;">
+        🎯 <strong>Challenge:</strong> Create a list of 5 of your favourite movies. Sort them alphabetically, print the first and last, and find the total count.
+      </div>
+    `,
+    starterCode: '# Lists in Python\n\n# Create and use a list:\nfruits = ["mango", "apple", "banana", "cherry"]\n\nprint("All fruits:", fruits)\nprint("First:", fruits[0])\nprint("Last:", fruits[-1])\nprint("Count:", len(fruits))\n\n# Sort and search:\nfruits.sort()\nprint("Sorted:", fruits)\n\n# Add and remove:\nfruits.append("grape")\nprint("After adding grape:", fruits)\n\n# Loop through:\nfor fruit in fruits:\n    print(f"  🍎 {fruit}")'
+  },
+  {
+    id: 'challenge',
+    icon: '🏆',
+    title: 'Final Challenge',
+    tag: 'challenge',
+    tagLabel: 'Challenge',
+    duration: '20 min',
+    completed: false,
+    content: `
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
+        <div style="font-size:36px;">🏆</div>
+        <div>
+          <span class="lesson-tag challenge">Challenge</span>
+          <h2 style="margin:6px 0 0;">Final Challenge — Build a Grade Calculator</h2>
+        </div>
+      </div>
+      <p>You've learned the fundamentals! Now it's time to combine everything — variables, conditionals, loops, functions, and lists — into one real program.</p>
+      <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:16px;margin:16px 0;">
+        <h3 style="color:#14532d;font-size:15px;margin:0 0 10px;">📋 Your Mission</h3>
+        <p style="font-size:13.5px;color:#166534;margin:0 0 8px;">Build a <strong>Grade Calculator</strong> that:</p>
+        <ol style="font-size:13.5px;color:#166534;line-height:2;padding-left:20px;margin:0;">
+          <li>Stores a list of student scores (at least 5 numbers)</li>
+          <li>Calculates the average score</li>
+          <li>Finds the highest and lowest scores</li>
+          <li>Uses a function to convert a score to a grade (A/B/C/D/F)</li>
+          <li>Prints a summary report for each student</li>
+        </ol>
+      </div>
+      <h3>Hints</h3>
+      <p>Here's a skeleton to get you started. Fill in the blanks!</p>
+      <pre><span class="kw">def</span> <span class="fn">get_grade</span>(score):
+    <span class="kw">if</span> score >= <span class="num">90</span>:
+        <span class="kw">return</span> <span class="str">"A"</span>
+    <span class="kw">elif</span> score >= <span class="num">80</span>:
+        <span class="kw">return</span> <span class="str">"B"</span>
+    <span class="cm"># ... add C, D, F ...</span>
+
+<span class="kw">scores</span> = [<span class="num">85</span>, <span class="num">92</span>, <span class="num">78</span>, <span class="num">60</span>, <span class="num">95</span>]
+<span class="cm"># Calculate average...</span>
+<span class="cm"># Print report...</span></pre>
+      <div class="hint-box" style="margin-top:16px;">
+        🎓 <strong>You've got this!</strong> If you get stuck, ask the Scaffolding Coach on the right — it'll guide you with hints without giving away the answer.
+      </div>
+    `,
+    starterCode: '# 🏆 Final Challenge — Grade Calculator\n# Combine everything you\'ve learned!\n\n# 1. A function to convert score to grade:\ndef get_grade(score):\n    if score >= 90:\n        return "A"\n    elif score >= 80:\n        return "B"\n    elif score >= 70:\n        return "C"\n    elif score >= 60:\n        return "D"\n    else:\n        return "F"\n\n# 2. Student data:\nstudents = [\n    {"name": "Alice", "score": 92},\n    {"name": "Bob", "score": 78},\n    {"name": "Carol", "score": 85},\n    {"name": "Dave", "score": 61},\n    {"name": "Eve", "score": 97},\n]\n\n# 3. Calculate stats:\nscores = [s["score"] for s in students]\naverage = sum(scores) / len(scores)\nhighest = max(scores)\nlowest = min(scores)\n\n# 4. Print report:\nprint("=" * 35)\nprint("  📊 GRADE REPORT")\nprint("=" * 35)\nfor student in students:\n    grade = get_grade(student["score"])\n    print(f"  {student[\'name\']:<8} {student[\'score\']}  →  Grade {grade}")\nprint("-" * 35)\nprint(f"  Average : {average:.1f}")\nprint(f"  Highest : {highest}")\nprint(f"  Lowest  : {lowest}")\nprint("=" * 35)'
+  },
+
+  // ══════════════════════════════════════════════════════════
+  // MODULE 8 — Universal Constants & Precision
+  // ══════════════════════════════════════════════════════════
+  {
+    id: 'eng_constants',
+    icon: '🔬',
+    title: 'Universal Constants & Precision',
+    tag: 'intermediate',
+    tagLabel: 'Intermediate',
+    duration: '14 min',
+    completed: false,
+    content: `
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
+        <div style="font-size:36px;">🔬</div>
+        <div>
+          <span class="lesson-tag intermediate">Intermediate</span>
+          <h2 style="margin:6px 0 0;">Universal Constants &amp; Precision</h2>
+        </div>
+      </div>
+      <p>Engineering relies on precise physical constants. Python variables are the natural home for these values — name them clearly, use them everywhere, change them in one place.</p>
+      <h3>Defining Engineering Constants</h3>
+      <pre><span class="cm"># Physics &amp; Mathematics constants</span>
+<span class="kw">g</span>  = <span class="num">9.81</span>       <span class="cm"># gravitational acceleration (m/s²)</span>
+<span class="kw">c</span>  = <span class="num">3e8</span>        <span class="cm"># speed of light (m/s) — 3 × 10⁸</span>
+<span class="kw">PI</span> = <span class="num">3.14159265</span> <span class="cm"># π (use math.pi in real code)</span>
+<span class="kw">R</span>  = <span class="num">8.314</span>      <span class="cm"># universal gas constant (J/mol·K)</span>
+<span class="kw">h</span>  = <span class="num">6.626e-34</span>  <span class="cm"># Planck's constant (J·s)</span>
+
+<span class="fn">print</span>(<span class="str">f"g = {g} m/s²"</span>)
+<span class="fn">print</span>(<span class="str">f"c = {c:.2e} m/s"</span>)   <span class="cm"># scientific notation</span></pre>
+      <h3>Float Precision — A Hidden Trap</h3>
+      <p>Computers represent decimal numbers in binary, which causes tiny rounding errors. Engineers must know this!</p>
+      <pre><span class="cm"># Unexpected result:</span>
+<span class="fn">print</span>(<span class="num">0.1</span> + <span class="num">0.2</span>)          <span class="cm"># 0.30000000000000004 !</span>
+
+<span class="cm"># Fix 1: round() for display</span>
+<span class="fn">print</span>(<span class="fn">round</span>(<span class="num">0.1</span> + <span class="num">0.2</span>, <span class="num">2</span>))  <span class="cm"># 0.3</span>
+
+<span class="cm"># Fix 2: f-string formatting</span>
+<span class="kw">result</span> = <span class="num">0.1</span> + <span class="num">0.2</span>
+<span class="fn">print</span>(<span class="str">f"Result = {result:.4f}"</span>) <span class="cm"># 4 decimal places</span></pre>
+      <h3>F-String Format Specifiers for Engineers</h3>
+      <div style="background:#f8fafc;border-radius:8px;padding:14px;border:1px solid #e2e8f0;margin:10px 0;">
+        <table style="width:100%;border-collapse:collapse;font-size:13px;">
+          <tr style="border-bottom:1px solid #e2e8f0;"><td style="padding:6px 8px;font-family:'DM Mono',monospace;color:#0254a0;">.2f</td><td style="padding:6px 8px;color:#475569;">2 decimal places: <code>3.14</code></td></tr>
+          <tr style="border-bottom:1px solid #e2e8f0;"><td style="padding:6px 8px;font-family:'DM Mono',monospace;color:#0254a0;">.4e</td><td style="padding:6px 8px;color:#475569;">Scientific notation: <code>3.1416e+00</code></td></tr>
+          <tr style="border-bottom:1px solid #e2e8f0;"><td style="padding:6px 8px;font-family:'DM Mono',monospace;color:#0254a0;">.6g</td><td style="padding:6px 8px;color:#475569;">Auto significant figures: <code>3.14159</code></td></tr>
+          <tr><td style="padding:6px 8px;font-family:'DM Mono',monospace;color:#0254a0;">10.3f</td><td style="padding:6px 8px;color:#475569;">Width 10, 3 decimals (right-aligned)</td></tr>
+        </table>
+      </div>
+      <h3>Kinematic Example</h3>
+      <pre><span class="kw">g</span> = <span class="num">9.81</span>
+<span class="kw">t</span> = <span class="num">3.0</span>   <span class="cm"># time in seconds</span>
+<span class="kw">v0</span> = <span class="num">0</span>    <span class="cm"># initial velocity</span>
+
+<span class="cm"># Distance fallen: s = v0*t + 0.5*g*t²</span>
+<span class="kw">s</span> = <span class="kw">v0</span> * <span class="kw">t</span> + <span class="num">0.5</span> * <span class="kw">g</span> * <span class="kw">t</span> ** <span class="num">2</span>
+<span class="fn">print</span>(<span class="str">f"After {t}s, object falls {s:.2f} m"</span>)</pre>
+      <div class="hint-box" style="margin-top:16px;">
+        🎯 <strong>Challenge:</strong> Define constants for <code>g</code>, <code>PI</code>, and <code>R</code>. Compute the circumference of a circle with radius 7 m, the weight of a 50 kg object, and the energy of a photon with frequency 5×10¹⁴ Hz using <code>E = h * f</code>. Format all outputs to 4 significant figures.
+      </div>
+    `,
+    starterCode: '# Module 8 — Universal Constants & Precision\n\n# Define your constants:\ng  = 9.81          # m/s²\nPI = 3.14159265\nR  = 8.314         # J/mol·K\nh  = 6.626e-34      # Planck constant J·s\nc  = 3e8           # speed of light m/s\n\n# --- Task 1: Circumference of circle r = 7 m\nr = 7\ncircumference = 2 * PI * r\nprint(f"Circumference = {circumference:.4f} m")\n\n# --- Task 2: Weight of 50 kg object\nmass = 50\nweight = mass * g\nprint(f"Weight = {weight:.2f} N")\n\n# --- Task 3: Photon energy  E = h * f\nf = 5e14           # frequency Hz\nE = h * f\nprint(f"Photon energy = {E:.4e} J")\n\n# --- Float precision demo:\nprint(f"0.1 + 0.2 = {0.1 + 0.2}")\nprint(f"0.1 + 0.2 (rounded) = {round(0.1 + 0.2, 4)}")'
+  },
+
+  // ══════════════════════════════════════════════════════════
+  // MODULE 9 — Engineering Design Logic
+  // ══════════════════════════════════════════════════════════
+  {
+    id: 'eng_design_logic',
+    icon: '🏗️',
+    title: 'Engineering Design Logic',
+    tag: 'intermediate',
+    tagLabel: 'Intermediate',
+    duration: '16 min',
+    completed: false,
+    content: `
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
+        <div style="font-size:36px;">🏗️</div>
+        <div>
+          <span class="lesson-tag intermediate">Intermediate</span>
+          <h2 style="margin:6px 0 0;">Engineering Design Logic</h2>
+        </div>
+      </div>
+      <p>Every engineering discipline uses <strong>design decisions</strong>: is a beam safe? Is a circuit overloaded? Does a mixture meet specification? These are if/else problems at their core.</p>
+      <h3>Civil Engineering — Beam Safety Factor</h3>
+      <pre><span class="cm"># Safety Factor = Ultimate Load / Applied Load</span>
+<span class="kw">ultimate_load</span> = <span class="num">500</span>   <span class="cm"># kN</span>
+<span class="kw">applied_load</span>  = <span class="num">180</span>   <span class="cm"># kN</span>
+<span class="kw">SF</span> = <span class="kw">ultimate_load</span> / <span class="kw">applied_load</span>
+
+<span class="kw">if</span> <span class="kw">SF</span> >= <span class="num">3.0</span>:
+    <span class="fn">print</span>(<span class="str">f"SF={SF:.2f} — SAFE ✅ (conservative design)"</span>)
+<span class="kw">elif</span> <span class="kw">SF</span> >= <span class="num">2.0</span>:
+    <span class="fn">print</span>(<span class="str">f"SF={SF:.2f} — ACCEPTABLE ⚠️ (review margins)"</span>)
+<span class="kw">else</span>:
+    <span class="fn">print</span>(<span class="str">f"SF={SF:.2f} — UNSAFE ❌ (redesign required)"</span>)</pre>
+      <h3>Electrical Engineering — Wire Current Rating</h3>
+      <pre><span class="cm"># Check if conductor can carry the load current</span>
+<span class="kw">rated_current</span>  = <span class="num">16</span>   <span class="cm"># A (cable rating)</span>
+<span class="kw">load_current</span>   = <span class="num">13.5</span> <span class="cm"># A (actual demand)</span>
+<span class="kw">diversity</span>      = <span class="num">0.8</span>  <span class="cm"># diversity factor</span>
+
+<span class="kw">demand</span> = <span class="kw">load_current</span> * <span class="kw">diversity</span>
+
+<span class="kw">if</span> <span class="kw">demand</span> <= <span class="kw">rated_current</span> * <span class="num">0.8</span>:
+    <span class="fn">print</span>(<span class="str">"Circuit: OK — within 80% of rating"</span>)
+<span class="kw">elif</span> <span class="kw">demand</span> <= <span class="kw">rated_current</span>:
+    <span class="fn">print</span>(<span class="str">"Circuit: MARGINAL — approaching limit"</span>)
+<span class="kw">else</span>:
+    <span class="fn">print</span>(<span class="str">"Circuit: OVERLOADED — upsize conductor"</span>)</pre>
+      <h3>Mechanical Engineering — Material Selection</h3>
+      <pre><span class="kw">yield_strength</span>   = <span class="num">250</span>  <span class="cm"># MPa (mild steel)</span>
+<span class="kw">applied_stress</span>   = <span class="num">95</span>   <span class="cm"># MPa</span>
+<span class="kw">temperature</span>      = <span class="num">420</span>  <span class="cm"># °C</span>
+
+<span class="kw">if</span> <span class="kw">temperature</span> > <span class="num">400</span>:
+    <span class="fn">print</span>(<span class="str">"Warning: High temp — consider alloy steel"</span>)
+<span class="kw">if</span> <span class="kw">applied_stress</span> < <span class="kw">yield_strength</span> / <span class="num">2</span>:
+    <span class="fn">print</span>(<span class="str">"Stress: Well within elastic limit ✅"</span>)
+<span class="kw">else</span>:
+    <span class="fn">print</span>(<span class="str">"Stress: Approaching yield — check FoS"</span>)</pre>
+      <div class="hint-box" style="margin-top:16px;">
+        🎯 <strong>Challenge:</strong> Write a <strong>Chemical Engineering</strong> pH classifier. Given a pH value, print "Strong Acid" (pH &lt; 2), "Weak Acid" (2–6.9), "Neutral" (7), "Weak Base" (7.1–11), or "Strong Base" (&gt; 11). Test it with pH values of 1, 4, 7, 9, and 13.
+      </div>
+    `,
+    starterCode: '# Module 9 — Engineering Design Logic\n\n# --- Civil: Safety Factor check\nultimate_load = 500   # kN\napplied_load  = 180   # kN\nSF = ultimate_load / applied_load\n\nif SF >= 3.0:\n    print(f"SF = {SF:.2f} — SAFE ✅")\nelif SF >= 2.0:\n    print(f"SF = {SF:.2f} — ACCEPTABLE ⚠️")\nelse:\n    print(f"SF = {SF:.2f} — UNSAFE ❌")\n\nprint("---")\n\n# --- Electrical: conductor check\nrated_current = 16\nload_current  = 13.5\ndiversity     = 0.8\ndemand = load_current * diversity\n\nif demand <= rated_current * 0.8:\n    print(f"Demand {demand:.1f}A — OK within 80% rating")\nelif demand <= rated_current:\n    print(f"Demand {demand:.1f}A — MARGINAL")\nelse:\n    print(f"Demand {demand:.1f}A — OVERLOADED")\n\nprint("---")\n\n# --- Your turn: Chemical pH classifier\npH_values = [1, 4, 7, 9, 13]\nfor pH in pH_values:\n    if pH < 2:\n        category = "Strong Acid"\n    elif pH < 7:\n        category = "Weak Acid"\n    elif pH == 7:\n        category = "Neutral"\n    elif pH <= 11:\n        category = "Weak Base"\n    else:\n        category = "Strong Base"\n    print(f"pH {pH:>2} → {category}")'
+  },
+
+  // ══════════════════════════════════════════════════════════
+  // MODULE 10 — Multi-Trial Lab Analysis
+  // ══════════════════════════════════════════════════════════
+  {
+    id: 'eng_lab_loops',
+    icon: '🧪',
+    title: 'Multi-Trial Lab Analysis',
+    tag: 'intermediate',
+    tagLabel: 'Intermediate',
+    duration: '18 min',
+    completed: false,
+    content: `
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
+        <div style="font-size:36px;">🧪</div>
+        <div>
+          <span class="lesson-tag intermediate">Intermediate</span>
+          <h2 style="margin:6px 0 0;">Multi-Trial Lab Analysis</h2>
+        </div>
+      </div>
+      <p>Lab work produces <em>repeated measurements</em>. Processing them by hand is tedious and error-prone. Loops automate this perfectly — one loop body, all trials processed identically.</p>
+      <h3>Physics Lab — Free-Fall Experiment</h3>
+      <pre><span class="cm"># 5 timing trials for a falling object</span>
+<span class="kw">g</span> = <span class="num">9.81</span>
+<span class="kw">times</span> = [<span class="num">0.452</span>, <span class="num">0.448</span>, <span class="num">0.461</span>, <span class="num">0.445</span>, <span class="num">0.455</span>]  <span class="cm"># seconds</span>
+
+<span class="fn">print</span>(<span class="str">"Trial  Time(s)  Height(m)"</span>)
+<span class="fn">print</span>(<span class="str">"-" * 28</span>)
+<span class="kw">for</span> i, t <span class="kw">in</span> <span class="fn">enumerate</span>(<span class="kw">times</span>):
+    <span class="kw">h</span> = <span class="num">0.5</span> * <span class="kw">g</span> * <span class="kw">t</span> ** <span class="num">2</span>
+    <span class="fn">print</span>(<span class="str">f"  {i+1}     {t:.3f}    {h:.4f}"</span>)
+
+<span class="kw">avg_t</span> = <span class="fn">sum</span>(<span class="kw">times</span>) / <span class="fn">len</span>(<span class="kw">times</span>)
+<span class="fn">print</span>(<span class="str">f"Mean time = {avg_t:.4f} s"</span>)</pre>
+      <h3>Chemistry Lab — Titration Data</h3>
+      <pre><span class="cm"># Burette readings for NaOH titration (mL)</span>
+<span class="kw">burette_readings</span> = [<span class="num">24.8</span>, <span class="num">25.0</span>, <span class="num">24.9</span>, <span class="num">25.1</span>, <span class="num">24.7</span>]
+<span class="kw">concordant</span> = []
+
+<span class="kw">for</span> v <span class="kw">in</span> <span class="kw">burette_readings</span>:
+    <span class="kw">mean</span> = <span class="fn">sum</span>(<span class="kw">burette_readings</span>) / <span class="fn">len</span>(<span class="kw">burette_readings</span>)
+    <span class="kw">if</span> <span class="fn">abs</span>(<span class="kw">v</span> - <span class="kw">mean</span>) <= <span class="num">0.2</span>:      <span class="cm"># within ±0.2 mL</span>
+        <span class="kw">concordant</span>.<span class="fn">append</span>(<span class="kw">v</span>)
+
+<span class="kw">mean_conc</span> = <span class="fn">sum</span>(<span class="kw">concordant</span>) / <span class="fn">len</span>(<span class="kw">concordant</span>)
+<span class="fn">print</span>(<span class="str">f"Concordant readings: {concordant}"</span>)
+<span class="fn">print</span>(<span class="str">f"Mean titre = {mean_conc:.2f} mL"</span>)</pre>
+      <h3>Mechanical Lab — Stress-Strain Data</h3>
+      <pre><span class="cm"># Load (kN) and extension (mm) pairs</span>
+<span class="kw">load_ext</span> = [
+    (<span class="num">0</span>, <span class="num">0</span>), (<span class="num">10</span>, <span class="num">0.12</span>), (<span class="num">20</span>, <span class="num">0.24</span>),
+    (<span class="num">30</span>, <span class="num">0.36</span>), (<span class="num">40</span>, <span class="num">0.49</span>), (<span class="num">50</span>, <span class="num">0.62</span>)
+]
+<span class="kw">gauge_length</span> = <span class="num">50</span>   <span class="cm"># mm</span>
+<span class="kw">area</span>         = <span class="num">78.5</span>  <span class="cm"># mm² (10mm dia bar)</span>
+
+<span class="fn">print</span>(<span class="str">"Load(kN)  Stress(MPa)  Strain"</span>)
+<span class="kw">for</span> load, ext <span class="kw">in</span> <span class="kw">load_ext</span>:
+    <span class="kw">stress</span> = (load * <span class="num">1000</span>) / <span class="kw">area</span>
+    <span class="kw">strain</span> = ext / <span class="kw">gauge_length</span>
+    <span class="fn">print</span>(<span class="str">f"  {load:>5}     {stress:>8.2f}   {strain:.5f}"</span>)</pre>
+      <div class="hint-box" style="margin-top:16px;">
+        🎯 <strong>Challenge:</strong> Write a <strong>Mathematics lab loop</strong> that iterates over angles [0°, 30°, 45°, 60°, 90°] and prints sin, cos, and tan values for each. Use the approximations: sin(0)=0, sin(30)=0.5, sin(45)=0.707, sin(60)=0.866, sin(90)=1 stored in parallel lists.
+      </div>
+    `,
+    starterCode: '# Module 10 — Multi-Trial Lab Analysis\n\n# --- Physics: Free-fall experiment\ng = 9.81\ntimes = [0.452, 0.448, 0.461, 0.445, 0.455]\n\nprint("Trial  Time(s)  Height(m)")\nprint("-" * 28)\nfor i in range(len(times)):\n    t = times[i]\n    h = 0.5 * g * t ** 2\n    print(f"  {i+1}     {t:.3f}    {h:.4f}")\n\navg_t = sum(times) / len(times)\nprint(f"Mean time = {avg_t:.4f} s")\nprint()\n\n# --- Chemistry: Titration concordancy\nburette_readings = [24.8, 25.0, 24.9, 25.1, 24.7]\nmean_all = sum(burette_readings) / len(burette_readings)\nconcordant = []\nfor v in burette_readings:\n    if abs(v - mean_all) <= 0.2:\n        concordant.append(v)\nmean_titre = sum(concordant) / len(concordant)\nprint(f"Concordant readings : {concordant}")\nprint(f"Mean titre          = {mean_titre:.2f} mL")\nprint()\n\n# --- Maths: Trig table (add your own!)\nangles  = [0,   30,   45,   60,   90  ]\nsines   = [0,   0.5,  0.707, 0.866, 1.0]\ncosines = [1.0, 0.866,0.707, 0.5,  0  ]\n\nprint("Angle  sin     cos")\nprint("-" * 24)\nfor i in range(len(angles)):\n    print(f" {angles[i]:>3}°   {sines[i]:.3f}   {cosines[i]:.3f}")'
+  },
+
+  // ══════════════════════════════════════════════════════════
+  // MODULE 11 — Cross-Disciplinary Formula Libraries
+  // ══════════════════════════════════════════════════════════
+  {
+    id: 'eng_formula_lib',
+    icon: '📐',
+    title: 'Cross-Disciplinary Formula Libraries',
+    tag: 'intermediate',
+    tagLabel: 'Intermediate',
+    duration: '20 min',
+    completed: false,
+    content: `
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
+        <div style="font-size:36px;">📐</div>
+        <div>
+          <span class="lesson-tag intermediate">Intermediate</span>
+          <h2 style="margin:6px 0 0;">Cross-Disciplinary Formula Libraries</h2>
+        </div>
+      </div>
+      <p>The real power of functions is building a <strong>personal formula library</strong> — define once, reuse endlessly across projects, disciplines, and colleagues.</p>
+      <h3>Civil Engineering Functions</h3>
+      <pre><span class="kw">def</span> <span class="fn">moment_of_inertia_rect</span>(b, d):
+    <span class="cm">"""Second moment of area for rectangle (mm⁴)"""</span>
+    <span class="kw">return</span> (b * d ** <span class="num">3</span>) / <span class="num">12</span>
+
+<span class="kw">def</span> <span class="fn">bending_stress</span>(M, y, I):
+    <span class="cm">"""σ = My/I  (MPa when M in N·mm)"""</span>
+    <span class="kw">return</span> (M * y) / I
+
+<span class="cm"># 200mm wide × 300mm deep beam, M = 50 kN·m</span>
+<span class="kw">I</span> = <span class="fn">moment_of_inertia_rect</span>(<span class="num">200</span>, <span class="num">300</span>)
+<span class="kw">sigma</span> = <span class="fn">bending_stress</span>(<span class="num">50e6</span>, <span class="num">150</span>, <span class="kw">I</span>)
+<span class="fn">print</span>(<span class="str">f"I = {I:.0f} mm⁴,  σ = {sigma:.2f} MPa"</span>)</pre>
+      <h3>Mechanical Engineering Functions</h3>
+      <pre><span class="kw">def</span> <span class="fn">thermal_expansion</span>(L0, delta_T, alpha):
+    <span class="cm">"""ΔL = L₀ × α × ΔT"""</span>
+    <span class="kw">return</span> L0 * alpha * delta_T
+
+<span class="kw">def</span> <span class="fn">power_shaft</span>(torque_Nm, rpm):
+    <span class="cm">"""P = T × ω = T × 2πN/60  (Watts)"""</span>
+    <span class="kw">omega</span> = <span class="num">2</span> * <span class="num">3.14159</span> * rpm / <span class="num">60</span>
+    <span class="kw">return</span> torque_Nm * omega
+
+<span class="cm"># Steel pipe: L=5m, ΔT=80°C, α=12×10⁻⁶/°C</span>
+<span class="kw">dL</span> = <span class="fn">thermal_expansion</span>(<span class="num">5000</span>, <span class="num">80</span>, <span class="num">12e-6</span>)
+<span class="fn">print</span>(<span class="str">f"Thermal expansion = {dL:.3f} mm"</span>)
+
+<span class="cm"># Shaft: 120 N·m at 1450 rpm</span>
+<span class="kw">P</span> = <span class="fn">power_shaft</span>(<span class="num">120</span>, <span class="num">1450</span>)
+<span class="fn">print</span>(<span class="str">f"Shaft power = {P/1000:.2f} kW"</span>)</pre>
+      <h3>Electrical Engineering Functions</h3>
+      <pre><span class="kw">def</span> <span class="fn">ohms_law</span>(known, value1, value2=<span class="kw">None</span>):
+    <span class="cm">"""Solve V=IR for the unknown."""</span>
+    <span class="kw">if</span> known == <span class="str">"V"</span>: <span class="kw">return</span> value1 * value2   <span class="cm"># V = I*R</span>
+    <span class="kw">if</span> known == <span class="str">"I"</span>: <span class="kw">return</span> value1 / value2   <span class="cm"># I = V/R</span>
+    <span class="kw">if</span> known == <span class="str">"R"</span>: <span class="kw">return</span> value1 / value2   <span class="cm"># R = V/I</span>
+
+<span class="kw">def</span> <span class="fn">power_electrical</span>(V, I):
+    <span class="cm">"""P = V × I  (Watts)"""</span>
+    <span class="kw">return</span> V * I
+
+<span class="fn">print</span>(<span class="str">f"V = {ohms_law('V', 2.5, 47):.1f} V"</span>)
+<span class="fn">print</span>(<span class="str">f"P = {power_electrical(230, 13):.0f} W"</span>)</pre>
+      <div class="hint-box" style="margin-top:16px;">
+        🎯 <strong>Challenge:</strong> Add a <strong>Chemical Engineering</strong> function called <code>ideal_gas_pressure(n, T, V)</code> that implements the ideal gas law <em>PV = nRT</em> and returns pressure P. Use R = 8.314. Test with n=2 mol, T=300 K, V=0.05 m³.
+      </div>
+    `,
+    starterCode: '# Module 11 — Cross-Disciplinary Formula Libraries\n\nPI = 3.14159265\n\n# ── Civil Engineering ──────────────────────────\ndef moment_of_inertia_rect(b, d):\n    """Second moment of area for rectangle (mm^4)"""\n    return (b * d ** 3) / 12\n\ndef bending_stress(M, y, I):\n    """Bending stress sigma = M*y/I (MPa)"""\n    return (M * y) / I\n\nI_beam = moment_of_inertia_rect(200, 300)\nsigma  = bending_stress(50e6, 150, I_beam)\nprint(f"Civil   | I = {I_beam:.0f} mm^4  |  sigma = {sigma:.2f} MPa")\n\n# ── Mechanical Engineering ─────────────────────\ndef thermal_expansion(L0, delta_T, alpha):\n    """Delta_L = L0 * alpha * Delta_T"""\n    return L0 * alpha * delta_T\n\ndef power_shaft(torque_Nm, rpm):\n    """Shaft power P = T * omega (Watts)"""\n    omega = 2 * PI * rpm / 60\n    return torque_Nm * omega\n\ndL = thermal_expansion(5000, 80, 12e-6)\nP  = power_shaft(120, 1450)\nprint(f"Mech    | dL = {dL:.3f} mm  |  P = {P/1000:.2f} kW")\n\n# ── Electrical Engineering ─────────────────────\ndef ohms_law(find, a, b):\n    if find == "V": return a * b\n    if find == "I": return a / b\n    if find == "R": return a / b\n\ndef power_electrical(V, I):\n    return V * I\n\nV = ohms_law("V", 2.5, 47)\nP_elec = power_electrical(230, 13)\nprint(f"Elec    | V = {V:.1f} V  |  P = {P_elec:.0f} W")\n\n# ── Chemical Engineering (your turn!) ──────────\ndef ideal_gas_pressure(n, T, V):\n    """PV = nRT  =>  P = nRT/V"""\n    R = 8.314\n    return (n * R * T) / V\n\nP_gas = ideal_gas_pressure(2, 300, 0.05)\nprint(f"Chem    | P = {P_gas:.2f} Pa  ({P_gas/1000:.3f} kPa)")'
+  },
+
+  // ══════════════════════════════════════════════════════════
+  // MODULE 12 — The Universal Solver (Capstone)
+  // ══════════════════════════════════════════════════════════
+  {
+    id: 'eng_capstone',
+    icon: '🌐',
+    title: 'The Universal Solver (Capstone)',
+    tag: 'challenge',
+    tagLabel: 'Challenge',
+    duration: '25 min',
+    completed: false,
+    content: `
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
+        <div style="font-size:36px;">🌐</div>
+        <div>
+          <span class="lesson-tag challenge">Challenge</span>
+          <h2 style="margin:6px 0 0;">The Universal Solver — Capstone Project</h2>
+        </div>
+      </div>
+      <p>This is your <strong>engineering capstone</strong>. You will combine every skill — variables, constants, conditionals, loops, and functions — into a single multi-branch engineering solver.</p>
+      <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:16px;margin:16px 0;">
+        <h3 style="color:#14532d;font-size:15px;margin:0 0 10px;">🎯 Mission Brief</h3>
+        <p style="font-size:13.5px;color:#166534;margin:0 0 8px;">Build a <strong>Universal Engineering Solver</strong> that:</p>
+        <ol style="font-size:13.5px;color:#166534;line-height:2.2;padding-left:20px;margin:0;">
+          <li>Stores a dictionary of engineering problems (one per discipline)</li>
+          <li>Each problem has known values and one <em>unknown</em> to solve for</li>
+          <li>Loops through all problems automatically</li>
+          <li>Uses a function for each discipline's formula</li>
+          <li>Applies an if/else safety check on every result</li>
+          <li>Prints a formatted multi-branch engineering report</li>
+        </ol>
+      </div>
+      <h3>Architecture — The Data Structure</h3>
+      <pre><span class="kw">problems</span> = [
+    {
+        <span class="str">"branch"</span>  : <span class="str">"Civil"</span>,
+        <span class="str">"formula"</span> : <span class="str">"Safety Factor"</span>,
+        <span class="str">"inputs"</span>  : {<span class="str">"ultimate"</span>: <span class="num">480</span>, <span class="str">"applied"</span>: <span class="num">160</span>},
+        <span class="str">"limit"</span>   : <span class="num">2.5</span>,
+        <span class="str">"unit"</span>    : <span class="str">"—"</span>
+    },
+    {
+        <span class="str">"branch"</span>  : <span class="str">"Mechanical"</span>,
+        <span class="str">"formula"</span> : <span class="str">"Shaft Power"</span>,
+        <span class="str">"inputs"</span>  : {<span class="str">"torque"</span>: <span class="num">95</span>, <span class="str">"rpm"</span>: <span class="num">960</span>},
+        <span class="str">"limit"</span>   : <span class="num">5000</span>,
+        <span class="str">"unit"</span>    : <span class="str">"W"</span>
+    },
+    <span class="cm"># ... add Electrical and Chemical entries ...</span>
+]</pre>
+      <h3>The Solver Loop Pattern</h3>
+      <pre><span class="kw">for</span> prob <span class="kw">in</span> problems:
+    result = <span class="fn">solve</span>(prob[<span class="str">"branch"</span>], prob[<span class="str">"inputs"</span>])
+    status = <span class="str">"PASS ✅"</span> <span class="kw">if</span> result >= prob[<span class="str">"limit"</span>] <span class="kw">else</span> <span class="str">"REVIEW ⚠️"</span>
+    <span class="fn">print</span>(<span class="str">f"{prob['branch']:<12} {prob['formula']:<18} {result:>8.2f} {prob['unit']}  {status}"</span>)</pre>
+      <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:14px;margin:16px 0;">
+        <p style="font-size:13px;color:#1e40af;margin:0;font-weight:500;">💡 The Inline Conditional (Ternary)</p>
+        <p style="font-size:13px;color:#1e40af;margin:6px 0 0;">Python lets you write simple if/else in one line:<br>
+        <code>label = "PASS" if result > limit else "FAIL"</code><br>
+        Perfect for assigning labels inside a loop!</p>
+      </div>
+      <div class="hint-box" style="margin-top:16px;">
+        🏆 <strong>Grand Challenge:</strong> Complete the starter code. Add the Electrical problem (V=IR, solve for R given V=230V, I=8A, check R &gt; 20Ω) and the Chemical problem (PV=nRT, solve for T given P=101325 Pa, V=0.025 m³, n=1 mol, check T between 270–330 K). Print the full four-branch report.
+      </div>
+    `,
+    starterCode: '# Module 12 — The Universal Solver (Capstone)\n# Combine ALL skills into one multi-branch engineering report\n\nPI = 3.14159265\nR_gas = 8.314\n\ndef solve_civil(inp):\n    """Safety Factor = ultimate / applied"""\n    return inp["ultimate"] / inp["applied"]\n\ndef solve_mechanical(inp):\n    """Shaft power P = T * omega"""\n    omega = 2 * PI * inp["rpm"] / 60\n    return inp["torque"] * omega\n\ndef solve_electrical(inp):\n    """Ohms law: R = V / I"""\n    return inp["V"] / inp["I"]\n\ndef solve_chemical(inp):\n    """Ideal gas: T = PV / nR"""\n    return (inp["P"] * inp["V"]) / (inp["n"] * R_gas)\n\nproblems = [\n    {"branch": "Civil",      "formula": "Safety Factor", "inputs": {"ultimate": 480, "applied": 160}, "limit": 2.5,   "above": True, "unit": ""},\n    {"branch": "Mechanical", "formula": "Shaft Power",   "inputs": {"torque": 95, "rpm": 960},        "limit": 5000,  "above": True, "unit": "W"},\n    {"branch": "Electrical", "formula": "Resistance",    "inputs": {"V": 230, "I": 8},                "limit": 20,    "above": True, "unit": "Ohm"},\n    {"branch": "Chemical",   "formula": "Temperature",   "inputs": {"P": 101325, "V": 0.025, "n": 1.0}, "limit": 270, "above": True, "unit": "K"},\n]\n\ndef solve(branch, inputs):\n    if branch == "Civil":      return solve_civil(inputs)\n    if branch == "Mechanical": return solve_mechanical(inputs)\n    if branch == "Electrical": return solve_electrical(inputs)\n    if branch == "Chemical":   return solve_chemical(inputs)\n    return 0\n\nprint("=" * 58)\nprint("  SHIVA\'s UNIVERSAL ENGINEERING SOLVER")\nprint("=" * 58)\nprint("  Branch        Formula            Result     Unit  Status")\nprint("-" * 58)\nfor prob in problems:\n    result = solve(prob["branch"], prob["inputs"])\n    passed = result >= prob["limit"] if prob["above"] else result <= prob["limit"]\n    status = "PASS OK" if passed else "REVIEW"\n    br = prob["branch"]\n    fm = prob["formula"]\n    un = prob["unit"]\n    print(f"  {br:<13} {fm:<18} {result:>9.3f}  {un:<5} {status}")\nprint("=" * 58)\nprint("  End of report — all branches analysed.")\nprint("=" * 58)'
+  }
+];
+
+// ─── App State ───────────────────────────────────────────────
+let state = {
+  modules: [...DEFAULT_MODULES],
+  currentModule: 'welcome',
+  completedIds: new Set(),
+  pdfLoaded: false
+};
+
+// ─── Coach Responses (Scaffolding — hints only) ───────────────
+const COACH_RESPONSES = {
+  default: [
+    "That's a great question! Before I answer — what do you think is happening in that part of the code?",
+    "Interesting! Have you tried running just that one line to see what it does?",
+    "Good thinking! What data type do you think that variable is? Try using <code>type()</code> to check.",
+    "Let's break it down. What does the first line of your code do on its own?",
+    "You're on the right track! Can you describe in plain English what you want the program to do?",
+    "Think about it this way: what would you do if you were solving this problem without a computer?",
+  ],
+  hello: ["Nice! What do you think the parentheses <code>()</code> are for in <code>print()</code>?", "Great start! Now, what happens if you put a number inside print instead of a string?"],
+  variable: ["Good question about variables! What's the difference between a variable name and its value?", "Think of a variable like a box. What would happen if you tried to use a box before putting anything in it?"],
+  loop: ["Loops can be tricky! What do you think the variable <code>i</code> in <code>for i in range(5)</code> represents?", "For vs While — when would you use one over the other?"],
+  function: ["Functions are like recipes! What are the 'ingredients' (inputs) your function needs?", "What should your function produce? Think about what <code>return</code> does."],
+  error: ["Errors are your friends — they tell you exactly what went wrong! What does the last line of the error message say?", "Look at the line number in the error. What's on that line?"],
+  list: ["Lists are ordered! If the first item is at index 0, what index would the 5th item be at?"],
+  if: ["What condition needs to be True for that block to run? Try writing it in plain English first."],
+  // ── Engineering-specific coach hints ──
+  constant: ["In engineering, why is it better to define <code>g = 9.81</code> once at the top rather than typing 9.81 every time in your formula?", "If g = 9.81 m/s² on Earth, how would you adapt your code to run the same simulation on the Moon (g = 1.62)?"],
+  precision: ["Why do you think 0.1 + 0.2 doesn't equal exactly 0.3 in Python? Hint: think about how computers store numbers internally.", "When would a rounding error of 0.000000001 matter — in everyday shopping, or in aerospace trajectory calculations?"],
+  safety: ["A safety factor of 2.0 means the structure can take twice the applied load before failure. What real-world events might make you choose SF = 3.5 instead of 2.0?", "In your safety factor check, what happens if <code>applied_load</code> is zero? How would an engineer defend against that in their code?"],
+  formula: ["What does the docstring (the triple-quoted string) inside your function tell other engineers who use your library?", "If you wanted to add a Hydraulics function for pipe flow (Darcy-Weisbach), what parameters would it need? Think before you code."],
+  capstone: ["Before writing any code, can you draw the data flow? Which function needs to run first, and what does it hand off to the next?", "Your solver dispatches to different functions based on <code>branch</code>. What Python structure could replace the chain of if/elif statements to make it more elegant?"],
+  units: ["What units is your answer in? Engineering bugs are often unit mismatches — did you mix mm and m, or kN and N?", "Try tracing the units through your formula: if M is in N·mm and y is in mm and I is in mm⁴, what are the units of M*y/I?"],
+};
+
+function getCoachResponse(msg) {
+  const lower = msg.toLowerCase();
+  if (lower.includes('error') || lower.includes('wrong') || lower.includes('not work')) return pick(COACH_RESPONSES.error);
+  if (lower.includes('constant') || lower.includes('pi') || lower.includes('gravity') || lower.includes('planck')) return pick(COACH_RESPONSES.constant);
+  if (lower.includes('precision') || lower.includes('float') || lower.includes('decimal') || lower.includes('round')) return pick(COACH_RESPONSES.precision);
+  if (lower.includes('safety') || lower.includes('factor') || lower.includes('stress') || lower.includes('load')) return pick(COACH_RESPONSES.safety);
+  if (lower.includes('formula') || lower.includes('library') || lower.includes('docstring') || lower.includes('ohm') || lower.includes('thermal')) return pick(COACH_RESPONSES.formula);
+  if (lower.includes('capstone') || lower.includes('solver') || lower.includes('universal') || lower.includes('dispatcher')) return pick(COACH_RESPONSES.capstone);
+  if (lower.includes('unit') || lower.includes('mpa') || lower.includes('kn') || lower.includes('mm')) return pick(COACH_RESPONSES.units);
+  if (lower.includes('loop') || lower.includes('for') || lower.includes('while') || lower.includes('trial') || lower.includes('lab')) return pick(COACH_RESPONSES.loop);
+  if (lower.includes('function') || lower.includes('def') || lower.includes('return')) return pick(COACH_RESPONSES.function);
+  if (lower.includes('variable') || lower.includes('assign') || lower.includes('=')) return pick(COACH_RESPONSES.variable);
+  if (lower.includes('hello') || lower.includes('print') || lower.includes('first')) return pick(COACH_RESPONSES.hello);
+  if (lower.includes('list') || lower.includes('array') || lower.includes('append')) return pick(COACH_RESPONSES.list);
+  if (lower.includes('if') || lower.includes('else') || lower.includes('condition')) return pick(COACH_RESPONSES.if);
+  return pick(COACH_RESPONSES.default);
+}
+
+function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
+// ─── Python Interpreter v3 ────────────────────────────────────
+// v3 upgrades:
+//   1. List comprehensions  [x*2 for x in lst if x > 0]
+//   2. Advanced f-strings   {var:.2f}  {expr:>10.3f}  {expr!r}
+//   3. Escape chars         \n \t \\ rendered in output
+//   4. Robust dict access   student["name"]  student['name']
+//      inside f-strings, print, and all expressions
+//   5. NameError reporting  instead of undefined
+//   6. Tuple unpacking in for loops  for k, v in items()
+//   7. Nested f-string format specs  {val:{width}.{prec}f}
+//   8. import math / import random  stubs
+function simulatePython(code) {
+  const outputLines = [];
+  const vars        = {};
+  const functions   = {};
+
+  // ── Python-style string / repr ─────────────────────────────
+  function pyStr(v) {
+    if (v === null || v === undefined) return 'None';
+    if (v === true)  return 'True';
+    if (v === false) return 'False';
+    if (Array.isArray(v)) return '[' + v.map(pyRepr).join(', ') + ']';
+    if (typeof v === 'object')
+      return '{' + Object.entries(v).map(([k, val]) => pyRepr(k) + ': ' + pyRepr(val)).join(', ') + '}';
+    return String(v);
+  }
+  function pyRepr(v) {
+    if (typeof v === 'string') return "'" + v.replace(/\\/g, '\\\\').replace(/'/g, "\\'") + "'";
+    return pyStr(v);
+  }
+
+  // ── Resolve Python escape sequences ────────────────────────
+  function resolveEscapes(s) {
+    return s
+      .replace(/\\n/g,  '\n')
+      .replace(/\\t/g,  '\t')
+      .replace(/\\r/g,  '\r')
+      .replace(/\\\\/g, '\uE000')   // temp-protect real backslash
+      .replace(/\\'/g,  "'")
+      .replace(/\\"/g,  '"')
+      .replace(/\uE000/g, '\\');
+  }
+
+  // ── Apply Python format spec to a value ────────────────────
+  // spec examples: ".2f"  "8.3f"  ">10"  "<15"  ".4e"  ".0%"  "d"
+  function applyFmt(val, spec) {
+    if (!spec) return pyStr(val);
+    spec = spec.trim();
+
+    // fill+align:  "<10"  ">8"  "^12"  "010.2f"  ">9.3f"
+    const full = spec.match(/^([^a-zA-Z%]*)([fFeEdgGsd%])$/);
+    if (full) {
+      const [, pre, conv] = full;
+      const alignM  = pre.match(/^([<>^]?)(0?)(\d*)\.?(\d*)$/);
+      const align   = alignM ? alignM[1] : '';
+      const zeroPad = alignM ? alignM[2] === '0' : false;
+      const width   = alignM && alignM[3] ? parseInt(alignM[3]) : 0;
+      const prec    = alignM && alignM[4] !== '' ? parseInt(alignM[4]) : undefined;
+      const n       = parseFloat(val);
+      let result;
+      if (conv === 'f' || conv === 'F') result = n.toFixed(prec !== undefined ? prec : 6);
+      else if (conv === 'e')            result = n.toExponential(prec !== undefined ? prec : 6);
+      else if (conv === 'E')            result = n.toExponential(prec !== undefined ? prec : 6).toUpperCase();
+      else if (conv === 'g' || conv === 'G') {
+        const p = prec !== undefined ? prec : 6;
+        result = parseFloat(n.toPrecision(p || 1)).toString();
+        if (result.includes('e') && conv === 'G') result = result.toUpperCase();
+      }
+      else if (conv === 'd')            result = Math.trunc(n).toString();
+      else if (conv === '%')            result = (n * 100).toFixed(prec !== undefined ? prec : 6) + '%';
+      else if (conv === 's')            result = pyStr(val);
+      else                              result = pyStr(val);
+      // zero-pad
+      if (zeroPad && width && result.length < width) result = result.padStart(width, '0');
+      // align
+      if (width && result.length < width) {
+        if      (align === '<') result = result.padEnd(width);
+        else if (align === '^') { const p = width - result.length; result = ' '.repeat(Math.floor(p/2)) + result + ' '.repeat(Math.ceil(p/2)); }
+        else                    result = result.padStart(width);
+      }
+      return result;
+    }
+    // pure alignment + width with no conversion  "<13"  ">8"  "^10"
+    const padOnly = spec.match(/^([<>^]?)(\d+)$/);
+    if (padOnly) {
+      const [, align, w] = padOnly;
+      const s = pyStr(val); const width = parseInt(w);
+      if (align === '<' || align === '') return s.padEnd(width);
+      if (align === '>')                 return s.padStart(width);
+      if (align === '^') { const p = width - s.length; return ' '.repeat(Math.floor(p/2)) + s + ' '.repeat(Math.ceil(p/2)); }
+    }
+    return pyStr(val);
+  }
+
+  // ── Find the format colon inside {expr:spec} ───────────────
+  // Must not match colons inside nested brackets/parens
+  function findFormatColon(s) {
+    let depth = 0, inStr = false, strChar = '';
+    for (let i = 0; i < s.length; i++) {
+      const c = s[i];
+      if (!inStr && (c === '"' || c === "'")) { inStr = true; strChar = c; continue; }
+      if (inStr && c === strChar)             { inStr = false; continue; }
+      if (!inStr) {
+        if (c === '(' || c === '[' || c === '{') depth++;
+        else if (c === ')' || c === ']' || c === '}') depth--;
+        else if (c === ':' && depth === 0) return i;
+      }
+    }
+    return -1;
+  }
+
+  // ── Render an f-string body (between outer quotes) ─────────
+  function renderFString(body, localVars) {
+    let result = '', i = 0;
+    while (i < body.length) {
+      if (body[i] === '{' && body[i + 1] === '{') { result += '{'; i += 2; continue; }
+      if (body[i] === '}' && body[i + 1] === '}') { result += '}'; i += 2; continue; }
+      if (body[i] === '{') {
+        // find matching closing brace (depth-aware)
+        let depth = 0, j = i + 1;
+        while (j < body.length) {
+          if      (body[j] === '{') depth++;
+          else if (body[j] === '}') { if (depth === 0) break; depth--; }
+          j++;
+        }
+        const inner = body.slice(i + 1, j);
+        // split expr from format spec at top-level colon
+        const ci = findFormatColon(inner);
+        let exprPart = ci >= 0 ? inner.slice(0, ci).trim() : inner.trim();
+        const specPart = ci >= 0 ? inner.slice(ci + 1).trim() : '';
+        // conversion flag  !r  !s  !a
+        let conv = '';
+        const cm = exprPart.match(/^([\s\S]+)!([rsa])$/);
+        if (cm) { exprPart = cm[1].trim(); conv = cm[2]; }
+        let val;
+        try   { val = evalExpr(exprPart, localVars); }
+        catch (e) { val = `<${e.message}>`; }
+        const rendered = conv === 'r' ? pyRepr(val) : pyStr(val);
+        result += specPart ? applyFmt(val, specPart) : rendered;
+        i = j + 1;
+      } else {
+        result += body[i++];
+      }
+    }
+    return result;
+  }
+
+  // ── Split comma-separated args respecting nesting + strings ─
+  function splitCommas(s) {
+    const parts = [];
+    let depth = 0, cur = '', inStr = false, strChar = '';
+    for (let i = 0; i < s.length; i++) {
+      const ch = s[i];
+      if (!inStr) {
+        // triple quotes
+        if (ch === '"' || ch === "'") {
+          if (s.slice(i, i + 3) === ch + ch + ch) {
+            const tq  = ch + ch + ch;
+            const end = s.indexOf(tq, i + 3);
+            const seg = end < 0 ? s.slice(i) : s.slice(i, end + 3);
+            cur += seg; i = end < 0 ? s.length - 1 : end + 2; continue;
+          }
+          inStr = true; strChar = ch; cur += ch; continue;
+        }
+        if (ch === '(' || ch === '[' || ch === '{') { depth++; cur += ch; continue; }
+        if (ch === ')' || ch === ']' || ch === '}') { depth--; cur += ch; continue; }
+        if (ch === ',' && depth === 0) { parts.push(cur); cur = ''; continue; }
+      } else if (ch === strChar && s[i - 1] !== '\\') {
+        inStr = false; cur += ch; continue;
+      }
+      cur += ch;
+    }
+    if (cur.trim() !== '' || parts.length > 0) parts.push(cur);
+    return parts;
+  }
+
+  function parseArgs(argsStr, localVars) {
+    return splitCommas(argsStr)
+      .map(s => s.trim()).filter(Boolean)
+      .map(s => evalExpr(s, localVars));
+  }
+
+  // ── Match outermost subscript obj[key] ──────────────────────
+  // Handles both numeric and string keys: d["name"]  d['key']  lst[0]
+  function matchSubscript(expr) {
+    if (!expr.endsWith(']')) return null;
+    let depth = 0, inStr = false, strChar = '';
+    for (let i = expr.length - 1; i >= 0; i--) {
+      const ch = expr[i];
+      if (!inStr && (ch === '"' || ch === "'")) { inStr = true; strChar = ch; }
+      else if (inStr && ch === strChar && expr[i - 1] !== '\\') inStr = false;
+      else if (!inStr && ch === ']') depth++;
+      else if (!inStr && ch === '[') {
+        depth--;
+        if (depth === 0 && i > 0) return [expr.slice(0, i).trim(), expr.slice(i + 1, -1).trim()];
+      }
+    }
+    return null;
+  }
+
+  // ── Split on binary operator (right-assoc, depth-aware) ─────
+  // Uses a forward-pass string map so RTL scanning is quote-safe.
+  function splitOnOp(expr, op) {
+    // Build a boolean array: inStringAt[i] = true if position i is inside a string
+    const inStringAt = new Uint8Array(expr.length);
+    let inStr = false, strChar = '', si = 0;
+    while (si < expr.length) {
+      const ch = expr[si];
+      if (!inStr) {
+        if (ch === '"' || ch === "'") {
+          // check for triple quote
+          if (expr.slice(si, si + 3) === ch + ch + ch) {
+            const tq = ch + ch + ch;
+            const end = expr.indexOf(tq, si + 3);
+            const endIdx = end < 0 ? expr.length : end + 3;
+            for (let k = si; k < endIdx; k++) inStringAt[k] = 1;
+            si = endIdx; continue;
+          }
+          inStr = true; strChar = ch; inStringAt[si] = 1;
+        }
+      } else {
+        inStringAt[si] = 1;
+        if (ch === strChar && expr[si - 1] !== '\\') inStr = false;
+      }
+      si++;
+    }
+    // Now scan right-to-left using the map
+    let depth = 0;
+    for (let i = expr.length - op.length; i >= 1; i--) {
+      if (inStringAt[i]) continue;
+      const ch = expr[i];
+      if (ch === ')' || ch === ']' || ch === '}') depth++;
+      else if (ch === '(' || ch === '[' || ch === '{') depth--;
+      if (depth === 0 && expr.slice(i, i + op.length) === op) {
+        const l = expr.slice(0, i).trim();
+        const r = expr.slice(i + op.length).trim();
+        if (!l || !r) continue;
+        if ((op === '>' || op === '<') && expr[i + 1] === '=') continue;
+        if (op === '-' && i > 0 && /[eE]/.test(expr[i - 1])) continue;
+        return [l, r];
+      }
+    }
+    return null;
+  }
+
+  // ── Find a word-boundary operator at the top level ──────────
+  function findWordOp(s, op) {
+    let depth = 0, inStr = false, strChar = '';
+    let i = 0;
+    while (i <= s.length - op.length) {
+      const ch = s[i];
+      if (!inStr) {
+        if (ch === '"' || ch === "'") {
+          // triple quote
+          if (s.slice(i, i + 3) === ch + ch + ch) {
+            const tq = ch + ch + ch;
+            const end = s.indexOf(tq, i + 3);
+            i = end < 0 ? s.length : end + 3; continue;
+          }
+          inStr = true; strChar = ch; i++; continue;
+        }
+        if (ch === '(' || ch === '[' || ch === '{') { depth++; i++; continue; }
+        if (ch === ')' || ch === ']' || ch === '}') { depth--; i++; continue; }
+        if (depth === 0 && s.slice(i, i + op.length) === op) return i;
+      } else {
+        if (ch === strChar && s[i - 1] !== '\\') inStr = false;
+      }
+      i++;
+    }
+    return -1;
+  }
+
+  // ── Ternary: "X if COND else Y" ─────────────────────────────
+  function splitTernary(expr) {
+    const ifIdx = findWordOp(expr, ' if ');
+    if (ifIdx < 0) return null;
+    const afterIf  = expr.slice(ifIdx + 4);
+    const elseIdx  = findWordOp(afterIf, ' else ');
+    if (elseIdx < 0) return null;
+    const thenE = expr.slice(0, ifIdx).trim();
+    const condE = afterIf.slice(0, elseIdx).trim();
+    const elseE = afterIf.slice(elseIdx + 6).trim();
+    if (!thenE || !condE || !elseE) return null;
+    return [thenE, condE, elseE];
+  }
+
+  // ── pyIn helper ─────────────────────────────────────────────
+  function pyIn(item, container) {
+    if (Array.isArray(container))  return container.some(x => x == item);
+    if (typeof container === 'string') return container.includes(String(item));
+    if (typeof container === 'object' && container !== null) return item in container;
+    return false;
+  }
+
+  // ── Core expression evaluator ────────────────────────────────
+  function evalExpr(expr, localVars) {
+    if (localVars === undefined) localVars = {};
+    const allVars = Object.assign({}, vars, localVars);
+    expr = (expr || '').trim();
+    if (!expr) return undefined;
+
+    // ── f-strings  f"..."  f'...'  f"""..."""  ─────────────────
+    if (expr[0] === 'f' && (expr[1] === '"' || expr[1] === "'")) {
+      const isTriple = expr.slice(1, 4) === '"""' || expr.slice(1, 4) === "'''";
+      const body = isTriple ? expr.slice(4, -3) : expr.slice(2, -1);
+      return renderFString(resolveEscapes(body), localVars);
+    }
+
+    // ── triple-quoted plain strings ─────────────────────────────
+    if (expr.slice(0, 3) === '"""' && expr.slice(-3) === '"""') return resolveEscapes(expr.slice(3, -3));
+    if (expr.slice(0, 3) === "'''" && expr.slice(-3) === "'''") return resolveEscapes(expr.slice(3, -3));
+
+    // ── plain string literals  "..."  '...' ────────────────────
+    if ((expr[0] === '"' && expr[expr.length - 1] === '"') ||
+        (expr[0] === "'" && expr[expr.length - 1] === "'")) {
+      // make sure it's truly a closed literal (balanced, no unescaped interior quote of same type)
+      return resolveEscapes(expr.slice(1, -1));
+    }
+
+    // ── bool / None ─────────────────────────────────────────────
+    if (expr === 'True')  return true;
+    if (expr === 'False') return false;
+    if (expr === 'None')  return null;
+
+    // ── numeric literals  (int, float, sci, hex, binary) ───────
+    if (/^-?0[xX][0-9a-fA-F]+$/.test(expr))       return parseInt(expr, 16);
+    if (/^-?0[bB][01]+$/.test(expr))               return parseInt(expr, 2);
+    if (/^-?0[oO][0-7]+$/.test(expr))              return parseInt(expr, 8);
+    if (/^-?(\d+\.?\d*|\.\d+)([eE][+-]?\d+)?$/.test(expr)) return parseFloat(expr);
+
+    // ── list literal / list comprehension ───────────────────────
+    if (expr[0] === '[' && expr[expr.length - 1] === ']') {
+      const inner = expr.slice(1, -1).trim();
+      if (!inner) return [];
+      // list comprehension: [body for var(s) in iterable (if filter)?]
+      // Use findWordOp to locate top-level ' for '
+      const forIdx = findWordOp(inner, ' for ');
+      if (forIdx > 0) {
+        const bodyExpr = inner.slice(0, forIdx).trim();
+        const rest     = inner.slice(forIdx + 5).trim();
+        // find ' in ' after the variable part
+        const inIdx    = findWordOp(rest, ' in ');
+        if (inIdx > 0) {
+          const varPart   = rest.slice(0, inIdx).trim();
+          const afterIn   = rest.slice(inIdx + 4).trim();
+          // optional ' if filter' at the end
+          const ifIdx     = findWordOp(afterIn, ' if ');
+          const iterExpr  = ifIdx >= 0 ? afterIn.slice(0, ifIdx).trim() : afterIn;
+          const filterExpr = ifIdx >= 0 ? afterIn.slice(ifIdx + 4).trim() : '';
+          const iterable  = evalExpr(iterExpr, localVars);
+          const loopVars  = varPart.split(',').map(v => v.trim());
+          if (!Array.isArray(iterable)) return [];
+          const result = [];
+          for (const item of iterable) {
+            const lv = Object.assign({}, localVars);
+            if (loopVars.length > 1 && Array.isArray(item)) {
+              loopVars.forEach((v, idx) => { lv[v] = item[idx]; });
+            } else {
+              lv[loopVars[0]] = item;
+            }
+            if (filterExpr) { try { if (!evalExpr(filterExpr, lv)) continue; } catch { continue; } }
+            try { result.push(evalExpr(bodyExpr, lv)); } catch { /* skip */ }
+          }
+          return result;
+        }
+      }
+      // plain list literal
+      return splitCommas(inner).map(e => evalExpr(e.trim(), localVars));
+    }
+
+    // ── dict literal ─────────────────────────────────────────────
+    if (expr[0] === '{' && expr[expr.length - 1] === '}') {
+      const inner = expr.slice(1, -1).trim();
+      if (!inner) return {};
+      const result = {};
+      splitCommas(inner).forEach(rawPair => {
+        const pair = rawPair.trim();
+        const ci = findFormatColon(pair);
+        if (ci < 0) return;
+        const k = evalExpr(pair.slice(0, ci).trim(), localVars);
+        const v = evalExpr(pair.slice(ci + 1).trim(), localVars);
+        result[k] = v;
+      });
+      return result;
+    }
+
+    // ── tuple / grouped parens ───────────────────────────────────
+    // Only strip outer parens when '(' at 0 truly matches ')' at last position
+    if (expr[0] === '(' && expr[expr.length - 1] === ')') {
+      let pd = 0, matchPos = -1, inS = false, sC = '';
+      for (let pi = 0; pi < expr.length; pi++) {
+        const pc = expr[pi];
+        if (!inS && (pc === '"' || pc === "'")) { inS = true; sC = pc; }
+        else if (inS && pc === sC) inS = false;
+        if (!inS) {
+          if (pc === '(') pd++;
+          else if (pc === ')') { pd--; if (pd === 0) { matchPos = pi; break; } }
+        }
+      }
+      if (matchPos === expr.length - 1) {
+        const inner = expr.slice(1, -1).trim();
+        if (!inner) return [];
+        const parts = splitCommas(inner);
+        return parts.length > 1 ? parts.map(e => evalExpr(e.trim(), localVars)) : evalExpr(inner, localVars);
+      }
+      // parens are not a matched outer pair — fall through to binary op scanning
+    }
+
+    // ── ternary: X if COND else Y ────────────────────────────────
+    const ternary = splitTernary(expr);
+    if (ternary) {
+      const [thenE, condE, elseE] = ternary;
+      return evalExpr(condE, localVars) ? evalExpr(thenE, localVars) : evalExpr(elseE, localVars);
+    }
+
+    // ── not ─────────────────────────────────────────────────────
+    if (/^not\s+/.test(expr)) return !evalExpr(expr.slice(4).trim(), localVars);
+
+    // ── unary minus — works on any expression ───────────────────
+    if (expr[0] === '-') {
+      // Make sure it's not a negative number literal (already handled above)
+      // and not a binary minus (would have been caught by splitOnOp)
+      const rest = expr.slice(1).trim();
+      if (rest) {
+        try {
+          const v = evalExpr(rest, localVars);
+          return typeof v === 'number' ? -v : NaN;
+        } catch(e) { /* fall through */ }
+      }
+    }
+
+    // ── unary plus ───────────────────────────────────────────────
+    if (expr[0] === '+') {
+      const rest = expr.slice(1).trim();
+      if (rest) { try { return +evalExpr(rest, localVars); } catch(e) {} }
+    }
+
+    // ── binary operators (scanned right-to-left by precedence) ──
+    const ops = [
+      ' or ', ' and ',
+      ' not in ', ' in ', ' is not ', ' is ',
+      '!=', '==', '>=', '<=', '>', '<',
+      '+', '-', '**', '//', '%', '/', '*',
+    ];
+    for (const op of ops) {
+      const parts = splitOnOp(expr, op);
+      if (!parts) continue;
+      const [lStr, rStr] = parts;
+      // lazy evaluators that raise NameError on undefined
+      const L = () => {
+        const v = evalExpr(lStr, localVars);
+        if (v === undefined) throw new ReferenceError(`NameError: name '${lStr.trim()}' is not defined`);
+        return v;
+      };
+      const R = () => {
+        const v = evalExpr(rStr, localVars);
+        if (v === undefined) throw new ReferenceError(`NameError: name '${rStr.trim()}' is not defined`);
+        return v;
+      };
+      if (op === ' or ')     return evalExpr(lStr, localVars) || evalExpr(rStr, localVars);
+      if (op === ' and ')    return evalExpr(lStr, localVars) && evalExpr(rStr, localVars);
+      if (op === ' not in ') return !pyIn(L(), R());
+      if (op === ' in ')     return pyIn(L(), R());
+      if (op === ' is not ') return L() !== R();
+      if (op === ' is ')     return L() === R();
+      if (op === '!=')   return L() != R();
+      if (op === '==')   return L() == R();
+      if (op === '>=')   return L() >= R();
+      if (op === '<=')   return L() <= R();
+      if (op === '>')    return L() > R();
+      if (op === '<')    return L() < R();
+      if (op === '+')  { const l = L(), r = R(); return (typeof l === 'string' || typeof r === 'string') ? pyStr(l) + pyStr(r) : l + r; }
+      if (op === '-')    return L() - R();
+      if (op === '**')   return Math.pow(L(), R());
+      if (op === '//')   return Math.floor(L() / R());
+      if (op === '%')    return L() % R();
+      if (op === '/')    return L() / R();
+      if (op === '*')  {
+        const l = L(), r = R();
+        if (typeof l === 'string' && typeof r === 'number') return l.repeat(Math.max(0, Math.trunc(r)));
+        if (typeof r === 'string' && typeof l === 'number') return r.repeat(Math.max(0, Math.trunc(l)));
+        if (Array.isArray(l) && typeof r === 'number') { let a = []; for (let k = 0; k < r; k++) a = a.concat(l); return a; }
+        return l * r;
+      }
+    }
+
+    // ── subscript access: obj[key]  ──────────────────────────────
+    // Handles both  d["name"]  d['key']  lst[0]  lst[-1]  nested
+    const subM = matchSubscript(expr);
+    if (subM) {
+      const [objExpr, keyExpr] = subM;
+      const obj = evalExpr(objExpr, localVars);
+      if (obj === undefined) throw new ReferenceError(`NameError: name '${objExpr}' is not defined`);
+      const key = evalExpr(keyExpr, localVars);
+      if (Array.isArray(obj))  return key < 0 ? obj[obj.length + key] : obj[key];
+      if (typeof obj === 'string') return key < 0 ? obj[obj.length + key] : obj[key];
+      if (typeof obj === 'object' && obj !== null) return obj[key];
+      return undefined;
+    }
+
+    // ── method call: obj.method(args) ───────────────────────────
+    const dotCallM = expr.match(/^([\s\S]+?)\.([a-zA-Z_]\w*)\(([\s\S]*)\)$/);
+    if (dotCallM) {
+      const [, objExpr, method, argsRaw] = dotCallM;
+      // Verify objExpr is balanced (not a false positive from a nested call)
+      const obj = evalExpr(objExpr, localVars);
+      if (obj === undefined) throw new ReferenceError(`NameError: name '${objExpr}' is not defined`);
+      const args = argsRaw.trim() ? parseArgs(argsRaw, localVars) : [];
+      return applyMethod(obj, method, args, localVars);
+    }
+
+    // ── attribute access: obj.attr ───────────────────────────────
+    const dotAttrM = expr.match(/^([\s\S]+?)\.([a-zA-Z_]\w*)$/);
+    if (dotAttrM) {
+      const [, objExpr, attr] = dotAttrM;
+      const obj = evalExpr(objExpr, localVars);
+      if (obj === undefined) return undefined;
+      if (typeof obj === 'object' && obj !== null && !Array.isArray(obj)) return obj[attr];
+      return undefined;
+    }
+
+    // ── built-in / user-defined function call ────────────────────
+    const fnCallM = expr.match(/^([a-zA-Z_]\w*)\(([\s\S]*)\)$/);
+    if (fnCallM) {
+      const [, fn, argsRaw] = fnCallM;
+      const args = argsRaw.trim() ? parseArgs(argsRaw, localVars) : [];
+      const bRes = callBuiltin(fn, args, localVars);
+      if (bRes !== null) return bRes.value;
+      if (functions[fn]) return callFunction(functions[fn], args);
+      throw new ReferenceError(`NameError: name '${fn}' is not defined`);
+    }
+
+    // ── variable lookup ──────────────────────────────────────────
+    if (/^[a-zA-Z_]\w*$/.test(expr)) {
+      if (expr in allVars) return allVars[expr];
+      throw new ReferenceError(`NameError: name '${expr}' is not defined`);
+    }
+
+    return undefined;
+  }
+
+  // ── Apply a method on obj ─────────────────────────────────────
+  function applyMethod(obj, method, args, localVars) {
+    if (typeof obj === 'string') {
+      if (method === 'lower')       return obj.toLowerCase();
+      if (method === 'upper')       return obj.toUpperCase();
+      if (method === 'strip')       return obj.trim();
+      if (method === 'lstrip')      return obj.trimStart();
+      if (method === 'rstrip')      return obj.trimEnd();
+      if (method === 'split')       return args[0] !== undefined ? obj.split(args[0]) : obj.split(/\s+/).filter(Boolean);
+      if (method === 'join')        return (Array.isArray(args[0]) ? args[0] : []).map(pyStr).join(obj);
+      if (method === 'replace')     return obj.split(args[0]).join(pyStr(args[1]));
+      if (method === 'startswith')  return obj.startsWith(args[0]);
+      if (method === 'endswith')    return obj.endsWith(args[0]);
+      if (method === 'find')        return obj.indexOf(args[0]);
+      if (method === 'rfind')       return obj.lastIndexOf(args[0]);
+      if (method === 'count')       return (obj.match(new RegExp(args[0].replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g')) || []).length;
+      if (method === 'index')       { const i = obj.indexOf(args[0]); if (i < 0) throw new Error(`ValueError: substring not found`); return i; }
+      if (method === 'format') {
+        let s = obj, idx = 0;
+        s = s.replace(/\{(\d*)\}/g, (_, n) => pyStr(args[n !== '' ? parseInt(n) : idx++]));
+        return s;
+      }
+      if (method === 'zfill')       return obj.padStart(args[0], '0');
+      if (method === 'center')      return obj.padStart(Math.floor((args[0]-obj.length)/2)+obj.length).padEnd(args[0]);
+      if (method === 'isdigit')     return /^\d+$/.test(obj);
+      if (method === 'isalpha')     return /^[a-zA-Z]+$/.test(obj);
+      if (method === 'isalnum')     return /^[a-zA-Z0-9]+$/.test(obj);
+      if (method === 'isupper')     return obj === obj.toUpperCase() && obj !== obj.toLowerCase();
+      if (method === 'islower')     return obj === obj.toLowerCase() && obj !== obj.toUpperCase();
+      if (method === 'title')       return obj.replace(/\b\w/g, c => c.toUpperCase());
+      if (method === 'encode')      return obj; // stub
+    }
+    if (Array.isArray(obj)) {
+      if (method === 'append')  { obj.push(args[0]); return null; }
+      if (method === 'extend')  { (Array.isArray(args[0]) ? args[0] : []).forEach(x => obj.push(x)); return null; }
+      if (method === 'insert')  { obj.splice(args[0], 0, args[1]); return null; }
+      if (method === 'remove')  { const i = obj.findIndex(x => x == args[0]); if (i >= 0) obj.splice(i, 1); return null; }
+      if (method === 'pop')     { return args[0] !== undefined ? obj.splice(args[0], 1)[0] : obj.pop(); }
+      if (method === 'sort')    { obj.sort((a, b) => a > b ? 1 : a < b ? -1 : 0); return null; }
+      if (method === 'reverse') { obj.reverse(); return null; }
+      if (method === 'clear')   { obj.length = 0; return null; }
+      if (method === 'index')   { const i = obj.findIndex(x => x == args[0]); if (i < 0) throw new Error(`ValueError: ${pyRepr(args[0])} is not in list`); return i; }
+      if (method === 'count')   { return obj.filter(x => x == args[0]).length; }
+      if (method === 'copy')    { return [...obj]; }
+    }
+    if (typeof obj === 'object' && obj !== null) {
+      if (method === 'keys')   return Object.keys(obj);
+      if (method === 'values') return Object.values(obj);
+      if (method === 'items')  return Object.entries(obj);
+      if (method === 'get')    return obj[args[0]] !== undefined ? obj[args[0]] : (args[1] !== undefined ? args[1] : null);
+      if (method === 'update') { if (typeof args[0] === 'object') Object.assign(obj, args[0]); return null; }
+      if (method === 'pop')    { const v = obj[args[0]]; delete obj[args[0]]; return v; }
+      if (method === 'copy')   { return Object.assign({}, obj); }
+      if (method === 'setdefault') { if (!(args[0] in obj)) obj[args[0]] = args[1] !== undefined ? args[1] : null; return obj[args[0]]; }
+    }
+    throw new Error(`AttributeError: '${typeof obj}' object has no attribute '${method}'`);
+  }
+
+  // ── Built-in functions ────────────────────────────────────────
+  function callBuiltin(fn, args, localVars) {
+    const wrap = v => ({ value: v });
+    if (fn === 'print')  return wrap(null); // handled in execLine
+    if (fn === 'len') {
+      const a = args[0];
+      if (a === null || a === undefined) throw new Error('TypeError: object of type NoneType has no len()');
+      return wrap(typeof a === 'string' ? a.length : Array.isArray(a) ? a.length : typeof a === 'object' ? Object.keys(a).length : 0);
+    }
+    if (fn === 'range') {
+      const [start, end, step] = args.length === 1 ? [0, args[0], 1] : args.length === 2 ? [args[0], args[1], 1] : args;
+      const r = []; const s = step || 1;
+      if (s > 0) { for (let i = start; i < end;  i += s) r.push(i); }
+      else       { for (let i = start; i > end;  i += s) r.push(i); }
+      return wrap(r);
+    }
+    if (fn === 'sum')        return wrap((args[0] || []).reduce((a, b) => a + b, args[1] || 0));
+    if (fn === 'max')        return wrap(args.length === 1 && Array.isArray(args[0]) ? Math.max(...args[0]) : Math.max(...args));
+    if (fn === 'min')        return wrap(args.length === 1 && Array.isArray(args[0]) ? Math.min(...args[0]) : Math.min(...args));
+    if (fn === 'abs')        return wrap(Math.abs(args[0]));
+    if (fn === 'round')      return wrap(args[1] !== undefined ? parseFloat(args[0].toFixed(args[1])) : Math.round(args[0]));
+    if (fn === 'int')        return wrap(typeof args[0] === 'string' ? parseInt(args[0], args[1] || 10) : Math.trunc(args[0]));
+    if (fn === 'float')      return wrap(parseFloat(args[0]));
+    if (fn === 'str')        return wrap(pyStr(args[0]));
+    if (fn === 'bool')       return wrap(Boolean(args[0]));
+    if (fn === 'repr')       return wrap(pyRepr(args[0]));
+    if (fn === 'chr')        return wrap(String.fromCharCode(args[0]));
+    if (fn === 'ord')        return wrap(typeof args[0] === 'string' ? args[0].charCodeAt(0) : NaN);
+    if (fn === 'hex')        return wrap('0x' + Math.trunc(args[0]).toString(16));
+    if (fn === 'bin')        return wrap('0b' + Math.trunc(args[0]).toString(2));
+    if (fn === 'oct')        return wrap('0o' + Math.trunc(args[0]).toString(8));
+    if (fn === 'pow')        return wrap(args[2] !== undefined ? Math.pow(args[0], args[1]) % args[2] : Math.pow(args[0], args[1]));
+    if (fn === 'divmod')     return wrap([Math.floor(args[0] / args[1]), args[0] % args[1]]);
+    if (fn === 'type') {
+      const a = args[0];
+      const t = a === null ? 'NoneType' : (a === true || a === false) ? 'bool'
+              : typeof a === 'number' ? (Number.isInteger(a) ? 'int' : 'float')
+              : typeof a === 'string' ? 'str' : Array.isArray(a) ? 'list'
+              : typeof a === 'object' ? 'dict' : typeof a;
+      return wrap(`<class '${t}'>`);
+    }
+    if (fn === 'isinstance') {
+      const a = args[0], tname = typeof args[1] === 'string' ? args[1] : String(args[1]);
+      if (tname.includes('int'))   return wrap(Number.isInteger(a));
+      if (tname.includes('float')) return wrap(typeof a === 'number');
+      if (tname.includes('str'))   return wrap(typeof a === 'string');
+      if (tname.includes('list'))  return wrap(Array.isArray(a));
+      if (tname.includes('dict'))  return wrap(typeof a === 'object' && !Array.isArray(a) && a !== null);
+      return wrap(false);
+    }
+    if (fn === 'sorted')     return wrap([...(args[0] || [])].sort((a, b) => a > b ? 1 : a < b ? -1 : 0));
+    if (fn === 'reversed')   return wrap([...(args[0] || [])].reverse());
+    if (fn === 'list')       return wrap(Array.isArray(args[0]) ? [...args[0]] : args[0] != null ? [...(args[0])] : []);
+    if (fn === 'tuple')      return wrap(Array.isArray(args[0]) ? [...args[0]] : []);
+    if (fn === 'set')        return wrap([...new Set(Array.isArray(args[0]) ? args[0] : [])]);
+    if (fn === 'dict')       return wrap(args.length === 0 ? {} : args[0]);
+    if (fn === 'enumerate')  return wrap((args[0] || []).map((v, i) => [args[1] !== undefined ? args[1] + i : i, v]));
+    if (fn === 'zip') {
+      const minLen = Math.min(...args.map(a => (a || []).length));
+      return wrap(Array.from({ length: minLen }, (_, i) => args.map(a => a[i])));
+    }
+    if (fn === 'map')    return wrap((args[1] || []).map(x => functions[args[0]] ? callFunction(functions[args[0]], [x]) : x));
+    if (fn === 'filter') return wrap((args[1] || []).filter(x => functions[args[0]] ? callFunction(functions[args[0]], [x]) : x));
+    if (fn === 'any')    return wrap((args[0] || []).some(Boolean));
+    if (fn === 'all')    return wrap((args[0] || []).every(Boolean));
+    if (fn === 'input')  return wrap(prompt(args[0] !== undefined ? pyStr(args[0]) : '') || '');
+    // ── math-like (available without import) ──────────────────
+    if (fn === 'sqrt')   return wrap(Math.sqrt(args[0]));
+    if (fn === 'floor')  return wrap(Math.floor(args[0]));
+    if (fn === 'ceil')   return wrap(Math.ceil(args[0]));
+    if (fn === 'log')    return wrap(args[1] !== undefined ? Math.log(args[0]) / Math.log(args[1]) : Math.log(args[0]));
+    if (fn === 'log10')  return wrap(Math.log10(args[0]));
+    if (fn === 'log2')   return wrap(Math.log2(args[0]));
+    if (fn === 'sin')    return wrap(Math.sin(args[0]));
+    if (fn === 'cos')    return wrap(Math.cos(args[0]));
+    if (fn === 'tan')    return wrap(Math.tan(args[0]));
+    if (fn === 'asin')   return wrap(Math.asin(args[0]));
+    if (fn === 'acos')   return wrap(Math.acos(args[0]));
+    if (fn === 'atan')   return wrap(Math.atan(args[0]));
+    if (fn === 'atan2')  return wrap(Math.atan2(args[0], args[1]));
+    if (fn === 'exp')    return wrap(Math.exp(args[0]));
+    if (fn === 'pi')     return wrap(Math.PI);
+    if (fn === 'e')      return wrap(Math.E);
+    if (fn === 'gcd')    { let a = Math.abs(args[0]), b = Math.abs(args[1]); while (b) { [a, b] = [b, a % b]; } return wrap(a); }
+    if (fn === 'radians') return wrap(args[0] * Math.PI / 180);
+    if (fn === 'degrees') return wrap(args[0] * 180 / Math.PI);
+    if (fn === 'hypot')   return wrap(Math.hypot(...args));
+    // ── random stub ────────────────────────────────────────────
+    if (fn === 'random')      return wrap(Math.random());
+    if (fn === 'randint')     return wrap(Math.floor(Math.random() * (args[1] - args[0] + 1)) + args[0]);
+    if (fn === 'choice')      return wrap(args[0][Math.floor(Math.random() * args[0].length)]);
+    if (fn === 'uniform')     return wrap(Math.random() * (args[1] - args[0]) + args[0]);
+    // ── misc ────────────────────────────────────────────────────
+    if (fn === 'id')          return wrap(Math.floor(Math.random() * 1e12));
+    if (fn === 'hash')        return wrap(String(args[0]).split('').reduce((h, c) => (Math.imul(31, h) + c.charCodeAt(0)) | 0, 0));
+    if (fn === 'vars')        return wrap(Object.assign({}, vars));
+    return null; // not a builtin
+  }
+
+  // ── Call user-defined function — unwraps return sentinel ────────
+  function callFunction(fnDef, args) {
+    const localVars = {};
+    fnDef.params.forEach((p, i) => {
+      localVars[p] = args[i] !== undefined ? args[i] : fnDef.defaults[i];
+    });
+    const result = execBlock(fnDef.body, Object.assign({}, vars, localVars));
+    // execBlock propagates {type:'return',value:X} sentinels — unwrap here
+    if (result && typeof result === 'object' && result.type === 'return') return result.value;
+    return result;
+  }
+
+  // ── Execute a single inline statement, returning sentinel if needed ──
+  function execInlineStmt(stmt, localVars) {
+    if (stmt.startsWith('return ') || stmt === 'return') {
+      const val = stmt === 'return' ? null : evalExpr(stmt.slice(7).trim(), localVars);
+      return { type: 'return', value: val };
+    }
+    if (stmt === 'break')    return { type: 'break' };
+    if (stmt === 'continue') return { type: 'continue' };
+    execLine(stmt.trim(), localVars, [], 0);
+    return null;
+  }
+
+  // ── Execute a block of lines ──────────────────────────────────
+  // Returns: undefined | {type:'return',value:V} | {type:'break'} | {type:'continue'}
+  function execBlock(blockLines, localVars) {
+    let i = 0;
+    while (i < blockLines.length) {
+      const raw = blockLines[i];
+      if (!raw || !raw.trim() || raw.trim().startsWith('#')) { i++; continue; }
+      const stripped = raw.trim();
+
+      // ── if / elif / else (single-line bodies on same line) ────
+      // Handles ALL of:
+      //   if cond: stmt
+      //   if cond: stmt  /  elif cond: stmt  /  else: stmt   (consecutive lines)
+      //   multi-line if/elif/else with indented sub-blocks (TODO: nested blocks)
+      if (/^if\s+/.test(stripped) || /^elif\s+/.test(stripped) || stripped === 'else:' || /^else:\s*\S/.test(stripped)) {
+        // Collect all consecutive if/elif/else branches at this indent level
+        const branches = [];
+        let j = i;
+        while (j < blockLines.length) {
+          const bl = blockLines[j].trim();
+          if (!bl) { j++; continue; }
+
+          const isIf   = /^if\s+/.test(bl);
+          const isElif = /^elif\s+/.test(bl);
+          const isElse = bl === 'else:' || /^else:\s*\S/.test(bl);
+
+          if (branches.length > 0 && !isElif && !isElse) break;  // end of if-chain
+          if (!isIf && !isElif && !isElse) break;
+
+          // Parse condition and inline body
+          const ifMatch   = bl.match(/^if\s+([\s\S]+?)\s*:\s*([\s\S]*)$/);
+          const elifMatch = bl.match(/^elif\s+([\s\S]+?)\s*:\s*([\s\S]*)$/);
+          const elseMatch = bl.match(/^else:\s*([\s\S]*)$/);
+
+          let cond = null, inlineBody = '';
+          if (ifMatch)   { cond = ifMatch[1].trim();   inlineBody = ifMatch[2].trim(); }
+          if (elifMatch) { cond = elifMatch[1].trim(); inlineBody = elifMatch[2].trim(); }
+          if (elseMatch) { cond = null;                inlineBody = elseMatch[1].trim(); }
+
+          // Collect indented sub-block lines (for multi-line if bodies)
+          j++;
+          const subBody = [];
+          if (!inlineBody) {
+            // multi-line body: collect indented lines
+            while (j < blockLines.length) {
+              const subBl = blockLines[j];
+              const subStripped = subBl ? subBl.trim() : '';
+              if (!subStripped) { j++; continue; }
+              const subIndent = subBl.match(/^ */)[0].length;
+              if (subIndent > 0) {
+                subBody.push(subBl.replace(/^ {4}/, ''));
+                j++;
+              } else break;
+            }
+          }
+          branches.push({ cond, inlineBody, subBody });
+          if (isElse) break;
+        }
+        i = j;
+
+        // Execute the first matching branch
+        for (const branch of branches) {
+          const condTrue = branch.cond === null || (() => {
+            try { return evalExpr(branch.cond, localVars); } catch(e) { return false; }
+          })();
+          if (condTrue) {
+            if (branch.inlineBody) {
+              const r = execInlineStmt(branch.inlineBody, localVars);
+              if (r) return r;
+            } else if (branch.subBody.length > 0) {
+              const r = execBlock(branch.subBody, localVars);
+              if (r && (r.type === 'return' || r.type === 'break' || r.type === 'continue')) return r;
+            }
+            break;
+          }
+        }
+        continue;
+      }
+
+      // ── for loop inside block ─────────────────────────────────
+      const forM = stripped.match(/^for\s+([\s\S]+?)\s+in\s+([\s\S]+?)\s*:/);
+      if (forM) {
+        const [, varPart, iterExpr] = forM;
+        const iterable = (() => { try { return evalExpr(iterExpr, localVars); } catch(e) { return []; } })();
+        const loopVars = varPart.split(',').map(v => v.trim());
+        i++;
+        // collect indented body
+        const subBody = [];
+        while (i < blockLines.length) {
+          const bl = blockLines[i];
+          const indent = (bl || '').match(/^ */)[0].length;
+          if (bl.trim() === '' || indent > 0) { subBody.push((bl || '').replace(/^ {4}/, '')); i++; }
+          else break;
+        }
+        if (Array.isArray(iterable)) {
+          for (const item of iterable) {
+            const lv = Object.assign({}, localVars);
+            if (loopVars.length > 1 && Array.isArray(item)) {
+              loopVars.forEach((v, idx) => { lv[v] = item[idx]; });
+            } else {
+              lv[loopVars[0]] = item;
+            }
+            const r = execBlock(subBody, lv);
+            Object.keys(lv).forEach(k => { localVars[k] = lv[k]; });
+            if (r && r.type === 'return') return r;
+            if (r && r.type === 'break')  break;
+          }
+        }
+        continue;
+      }
+
+      // ── while loop inside block ───────────────────────────────
+      const whileM = stripped.match(/^while\s+([\s\S]+?)\s*:/);
+      if (whileM) {
+        i++;
+        const subBody = [];
+        while (i < blockLines.length) {
+          const bl = blockLines[i];
+          const indent = (bl || '').match(/^ */)[0].length;
+          if (bl.trim() === '' || indent > 0) { subBody.push((bl || '').replace(/^ {4}/, '')); i++; }
+          else break;
+        }
+        let safety = 0;
+        while (safety++ < 1000) {
+          const condVal = (() => { try { return evalExpr(whileM[1], localVars); } catch(e) { return false; } })();
+          if (!condVal) break;
+          const r = execBlock(subBody, localVars);
+          if (r && r.type === 'return') return r;
+          if (r && r.type === 'break')  break;
+        }
+        continue;
+      }
+
+      const result = execLine(stripped, localVars, blockLines, i);
+      if (result && result.type === 'return')   return result;
+      if (result && result.type === 'break')    return result;
+      if (result && result.type === 'continue') { i++; continue; }
+      i++;
+    }
+    return undefined;
+  }
+
+  // ── Extract balanced print(...) contents ─────────────────────
+  function extractPrintArgs(line) {
+    const start = line.indexOf('(');
+    if (start < 0) return null;
+    let depth = 0, inStr = false, strChar = '';
+    for (let i = start; i < line.length; i++) {
+      const ch = line[i];
+      if (!inStr && (ch === '"' || ch === "'")) { inStr = true; strChar = ch; }
+      else if (inStr && ch === strChar && line[i - 1] !== '\\') inStr = false;
+      if (!inStr) {
+        if (ch === '(') depth++;
+        else if (ch === ')') { depth--; if (depth === 0) return line.slice(start + 1, i); }
+      }
+    }
+    return null;
+  }
+
+  // ── Execute a single statement ────────────────────────────────
+  function execLine(line, localVars, allLines, lineIdx) {
+    if (!line || line.startsWith('#')) return null;
+    // docstrings — skip
+    if (line.startsWith('"""') || line.startsWith("'''")) return null;
+    // import — stub (variables like math.pi are handled via callBuiltin)
+    if (line.startsWith('import ') || line.startsWith('from ')) {
+      // inject math namespace if student imports math
+      if (line.includes('math')) {
+        vars['pi'] = Math.PI; vars['e'] = Math.E;
+        vars['inf'] = Infinity; vars['nan'] = NaN;
+      }
+      return null;
+    }
+
+    // return / break / continue / pass
+    if (line.startsWith('return ') || line === 'return') {
+      return { type: 'return', value: line === 'return' ? null : evalExpr(line.slice(7).trim(), localVars) };
+    }
+    if (line === 'break')    return { type: 'break' };
+    if (line === 'continue') return { type: 'continue' };
+    if (line === 'pass')     return null;
+
+    // ── print() ─────────────────────────────────────────────────
+    if (line.startsWith('print(')) {
+      const inner = extractPrintArgs(line);
+      if (inner !== null) {
+        const allParts = splitCommas(inner);
+        const posArgs = [], kwArgs = {};
+        for (const part of allParts) {
+          const kw = part.trim().match(/^(sep|end|file|flush)\s*=\s*([\s\S]+)$/);
+          if (kw) { kwArgs[kw[1]] = evalExpr(kw[2].trim(), localVars); }
+          else if (part.trim()) {
+            try { posArgs.push(evalExpr(part.trim(), localVars)); }
+            catch (e) { posArgs.push(`<${e.message}>`); }
+          }
+        }
+        const sep  = kwArgs.sep  !== undefined ? pyStr(kwArgs.sep)  : ' ';
+        const end  = kwArgs.end  !== undefined ? pyStr(kwArgs.end)  : '\n';
+        const text = posArgs.map(pyStr).join(sep);
+        const full = text + end;
+        // Respect \n inside the output — split on literal newline char
+        const subLines = full.split('\n');
+        if (subLines[subLines.length - 1] === '') subLines.pop();
+        subLines.forEach(sl => outputLines.push(sl));
+      }
+      return null;
+    }
+
+    // ── augmented assignment: x += 1  x[k] -= 2 ────────────────
+    const augM = line.match(/^([a-zA-Z_]\w*(?:\[[\s\S]+?\])?)\s*(\+=|-=|\*=|\/=|\/\/=|\*\*=|%=)\s*([\s\S]+)$/);
+    if (augM) {
+      const [, target, op, rhs] = augM;
+      const subIdx = matchSubscript(target);
+      let current;
+      if (subIdx) {
+        const obj = evalExpr(subIdx[0], localVars);
+        const key = evalExpr(subIdx[1], localVars);
+        current = Array.isArray(obj) ? obj[key] : obj[key];
+      } else {
+        current = localVars[target] !== undefined ? localVars[target] : vars[target];
+      }
+      const rval = evalExpr(rhs, localVars);
+      let result;
+      if      (op === '+=')  result = (typeof current === 'string' || typeof rval === 'string') ? pyStr(current) + pyStr(rval) : current + rval;
+      else if (op === '-=')  result = current - rval;
+      else if (op === '*=')  result = current * rval;
+      else if (op === '/=')  result = current / rval;
+      else if (op === '//=') result = Math.floor(current / rval);
+      else if (op === '**=') result = Math.pow(current, rval);
+      else if (op === '%=')  result = current % rval;
+      if (subIdx) {
+        const obj = evalExpr(subIdx[0], localVars);
+        const key = evalExpr(subIdx[1], localVars);
+        if (Array.isArray(obj)) obj[key] = result; else obj[key] = result;
+      } else {
+        if (target in localVars) localVars[target] = result; else vars[target] = result;
+      }
+      return null;
+    }
+
+    // ── simple assignment: name = expr  or  obj[key] = val ──────
+    // Guard: only reject if the = is itself a comparison (==, !=, <=, >=)
+    // Check the character immediately before and after the = sign
+    if (line.includes('=') &&
+        !line.match(/^(if|while|elif|return|assert)\s/)) {
+      const eqIdx = line.indexOf('=');
+      const before = line[eqIdx - 1];
+      const after  = line[eqIdx + 1];
+      // skip if it's ==  !=  <=  >=  (comparison operators)
+      if (eqIdx > 0 && before !== '!' && before !== '<' && before !== '>' && after !== '=') {
+        const targetRaw = line.slice(0, eqIdx).trim();
+        const rhs       = line.slice(eqIdx + 1).trim();
+        // multi-target unpacking: a, b = expr
+        if (targetRaw.includes(',')) {
+          const names = targetRaw.split(',').map(s => s.trim());
+          const val   = evalExpr(rhs, localVars);
+          if (Array.isArray(val)) names.forEach((n, i) => { if (n in localVars) localVars[n] = val[i]; else vars[n] = val[i]; });
+          return null;
+        }
+        const val    = evalExpr(rhs, localVars);
+        const subIdx = matchSubscript(targetRaw);
+        if (subIdx) {
+          const obj = evalExpr(subIdx[0], localVars);
+          const key = evalExpr(subIdx[1], localVars);
+          if (Array.isArray(obj)) obj[key] = val; else obj[key] = val;
+        } else if (/^[a-zA-Z_]\w*$/.test(targetRaw)) {
+          if (targetRaw in localVars) localVars[targetRaw] = val; else vars[targetRaw] = val;
+        }
+        return null;
+      }
+    }
+
+    // ── method call side-effects: obj.method(args) ──────────────
+    const methM = line.match(/^([\s\S]+?)\.([a-zA-Z_]\w*)\(([\s\S]*)\)$/);
+    if (methM) {
+      try {
+        const obj  = evalExpr(methM[1], localVars);
+        const args = methM[3].trim() ? parseArgs(methM[3], localVars) : [];
+        applyMethod(obj, methM[2], args, localVars);
+      } catch (e) { /* swallow side-effect errors silently */ }
+      return null;
+    }
+
+    // ── standalone function call ─────────────────────────────────
+    const stndM = line.match(/^([a-zA-Z_]\w*)\(([\s\S]*)\)$/);
+    if (stndM) { try { evalExpr(line, localVars); } catch (e) {} return null; }
+
+    return null;
+  }
+
+  // ── Collect indented body lines ───────────────────────────────
+  function collectBody(cleanLines, startIdx, baseIndent) {
+    const body = [];
+    let i = startIdx;
+    while (i < cleanLines.length) {
+      const bl     = cleanLines[i];
+      const indent = bl.match(/^ */)[0].length;
+      const empty  = bl.trim() === '' || bl.trim().startsWith('#');
+      if (empty || indent > baseIndent) {
+        const strip = baseIndent + 4;
+        body.push(indent >= strip ? bl.slice(strip) : bl.slice(indent > 0 ? indent : 0));
+        i++;
+      } else break;
+    }
+    return { body, nextIdx: i };
+  }
+
+  // ── Top-level parser & runner ─────────────────────────────────
+  function parseAndRun(src) {
+    const cleanLines = src.replace(/\r\n/g, '\n').replace(/\r/g, '\n')
+                          .split('\n').map(l => l.replace(/\t/g, '    '));
+    let i = 0;
+    while (i < cleanLines.length) {
+      const line    = cleanLines[i];
+      const stripped = line.trim();
+      if (!stripped || stripped.startsWith('#') ||
+          stripped.startsWith('"""') || stripped.startsWith("'''")) { i++; continue; }
+      const indent = line.match(/^ */)[0].length;
+      if (indent > 0) { i++; continue; } // belongs to a block
+
+      // ── function definition ──────────────────────────────────
+      const fnDef = stripped.match(/^def\s+([a-zA-Z_]\w*)\s*\(([^)]*)\)\s*:(.*)/);
+      if (fnDef) {
+        const [, fnName, paramsRaw, inlineBody] = fnDef;
+        const params = [], defaults = [];
+        paramsRaw.split(',').map(p => p.trim()).filter(Boolean).forEach(p => {
+          const [name, def] = p.split('=').map(s => s.trim());
+          params.push(name);
+          defaults.push(def !== undefined ? evalExpr(def) : undefined);
+        });
+        const inlineTrimmed = (inlineBody || '').trim();
+        let body, nextIdx;
+        if (inlineTrimmed && inlineTrimmed !== ':') {
+          // single-line def: "def f(x): return x+1"  — body is on same line
+          body = [inlineTrimmed];
+          nextIdx = i + 1;
+        } else {
+          i++;
+          ({ body, nextIdx } = collectBody(cleanLines, i, 0));
+        }
+        functions[fnName] = { params, defaults, body };
+        i = nextIdx; continue;
+      }
+
+      // ── for loop ─────────────────────────────────────────────
+      const forM = stripped.match(/^for\s+([\s\S]+?)\s+in\s+([\s\S]+?)\s*:/);
+      if (forM) {
+        const [, varPart, iterExpr] = forM;
+        const iterable = evalExpr(iterExpr);
+        i++;
+        const { body, nextIdx } = collectBody(cleanLines, i, 0);
+        const loopVars = varPart.split(',').map(v => v.trim());
+        if (Array.isArray(iterable)) {
+          for (const item of iterable) {
+            const lv = Object.assign({}, vars);
+            if (loopVars.length > 1 && Array.isArray(item)) {
+              loopVars.forEach((v, idx) => { lv[v] = item[idx]; vars[v] = item[idx]; });
+            } else {
+              lv[loopVars[0]] = item; vars[loopVars[0]] = item;
+            }
+            const r = execBlock(body, lv);
+            Object.keys(lv).forEach(k => { if (k in vars) vars[k] = lv[k]; });
+            if (r && r.type === 'break') break;
+            if (outputLines.length > 1000) break;
+          }
+        }
+        i = nextIdx; continue;
+      }
+
+      // ── while loop ───────────────────────────────────────────
+      const whileM = stripped.match(/^while\s+([\s\S]+?)\s*:/);
+      if (whileM) {
+        i++;
+        const { body, nextIdx } = collectBody(cleanLines, i, 0);
+        let safety = 0;
+        while (evalExpr(whileM[1]) && safety++ < 1000) {
+          const lv = Object.assign({}, vars);
+          const r  = execBlock(body, lv);
+          Object.keys(lv).forEach(k => { vars[k] = lv[k]; });
+          if (r && r.type === 'break') break;
+          if (outputLines.length > 1000) break;
+        }
+        i = nextIdx; continue;
+      }
+
+      // ── if / elif / else ─────────────────────────────────────
+      if (/^if\s+[\s\S]+:/.test(stripped)) {
+        const blocks = [];
+        let j = i;
+        while (j < cleanLines.length) {
+          const bl   = cleanLines[j].trim();
+          const isIf   = /^if\s+/.test(bl);
+          const isElif = /^elif\s+/.test(bl);
+          const isElse = bl === 'else:';
+          if (!isIf && !isElif && !isElse && blocks.length > 0) break;
+          if (!isIf && !isElif && !isElse) { j++; continue; }
+          const cm   = bl.match(/^(?:if|elif)\s+([\s\S]+?)\s*:/);
+          const cond = isElse ? null : (cm ? cm[1] : null);
+          j++;
+          const { body, nextIdx: nj } = collectBody(cleanLines, j, 0);
+          blocks.push({ condition: cond, body });
+          j = nj;
+          if (isElse) break;
+          // peek for elif/else
+          let peek = j;
+          while (peek < cleanLines.length && !cleanLines[peek].trim()) peek++;
+          if (!/^(elif|else)/.test(cleanLines[peek]?.trim() || '')) break;
+        }
+        i = j;
+        for (const block of blocks) {
+          if (block.condition === null || evalExpr(block.condition)) {
+            const lv = Object.assign({}, vars);
+            execBlock(block.body, lv);
+            Object.keys(lv).forEach(k => { vars[k] = lv[k]; });
+            break;
+          }
+        }
+        continue;
+      }
+
+      // ── try / except ─────────────────────────────────────────
+      if (stripped === 'try:') {
+        i++;
+        const { body: tryBody, nextIdx: ni } = collectBody(cleanLines, i, 0);
+        i = ni;
+        const exceptBody = [];
+        if (cleanLines[i]?.trim().startsWith('except')) {
+          i++;
+          const { body: eb, nextIdx: ei } = collectBody(cleanLines, i, 0);
+          exceptBody.push(...eb); i = ei;
+        }
+        const finallyBody = [];
+        if (cleanLines[i]?.trim() === 'finally:') {
+          i++;
+          const { body: fb, nextIdx: fi } = collectBody(cleanLines, i, 0);
+          finallyBody.push(...fb); i = fi;
+        }
+        try   { execBlock(tryBody, Object.assign({}, vars)); }
+        catch (e) { if (exceptBody.length) execBlock(exceptBody, Object.assign({}, vars, { __err__: e.message })); }
+        finally { if (finallyBody.length) execBlock(finallyBody, Object.assign({}, vars)); }
+        continue;
+      }
+
+      // ── plain statement ──────────────────────────────────────
+      execLine(stripped, vars, cleanLines, i);
+      i++;
+    }
+  }
+
+  // ── Run & format output ───────────────────────────────────────
+  try {
+    parseAndRun(code);
+    return outputLines.join('\n') || '(no output)';
+  } catch (err) {
+    const msg = err.message || String(err);
+    const known = ['NameError', 'TypeError', 'ValueError', 'AttributeError', 'IndexError', 'ZeroDivisionError', 'RuntimeError'];
+    return known.some(k => msg.startsWith(k)) ? msg : `Error: ${msg}`;
+  }
+}
+
+
+
+// ─── UI Functions ─────────────────────────────────────────────
+function renderModuleList() {
+  const list = document.getElementById('module-list');
+  list.innerHTML = '';
+  state.modules.forEach(m => {
+    const btn = document.createElement('button');
+    btn.className = `module-item ${m.id === state.currentModule ? 'active' : ''}`;
+    btn.onclick = () => loadModule(m.id);
+    const completed = state.completedIds.has(m.id);
+    btn.innerHTML = `
+      <span class="module-icon">${completed ? '✅' : m.icon}</span>
+      <div style="flex:1;text-align:left;">
+        <div style="font-size:13px;font-weight:${m.id === state.currentModule ? '500' : '400'}">${m.title}</div>
+        <div style="font-size:11px;color:#94a3b8;">${m.duration}</div>
+      </div>
+    `;
+    list.appendChild(btn);
+  });
+  updateProgress();
+  renderStreak();
+}
+
+function loadModule(id) {
+  state.currentModule = id;
+  const mod = state.modules.find(m => m.id === id);
+  if (!mod) return;
+
+  document.getElementById('lesson-body').innerHTML = mod.content;
+  document.getElementById('code-editor').value = mod.starterCode || '# Write your code here\n';
+  document.getElementById('code-output').textContent = 'Ready. Click ▶ Run Code to execute your program.';
+  document.getElementById('current-module-label').textContent = mod.title;
+
+  // Mark as visited
+  state.completedIds.add(id);
+  renderModuleList();
+
+  // Switch to lesson tab
+  switchTab('lesson');
+
+  // Scroll top
+  document.getElementById('lesson-panel').scrollTop = 0;
+
+  // Coach intro message
+  const coachMessages = [
+    `Ready to explore <strong>${mod.title}</strong>! What part would you like me to help you understand first?`,
+    `Let's dive into <strong>${mod.title}</strong>. Before you start, what do you already know about this topic?`,
+    `Welcome to <strong>${mod.title}</strong>! Try the code in the Playground first, then come back with questions.`,
+  ];
+  addCoachMessage(pick(coachMessages), 'coach');
+}
+
+function switchTab(tab) {
+  document.getElementById('lesson-panel').style.display = tab === 'lesson' ? 'block' : 'none';
+  document.getElementById('playground-panel').style.display = tab === 'playground' ? 'flex' : 'none';
+  document.getElementById('tab-lesson').className = `tab-btn ${tab === 'lesson' ? 'active' : ''}`;
+  document.getElementById('tab-playground').className = `tab-btn ${tab === 'playground' ? 'active' : ''}`;
+}
+
+function runCode() {
+  const code = document.getElementById('code-editor').value;
+  const output = document.getElementById('code-output');
+  const status = document.getElementById('run-status');
+
+  output.style.color = '#4ade80';
+  status.textContent = 'Running…';
+
+  setTimeout(() => {
+    try {
+      const result = simulatePython(code);
+      output.textContent = result;
+      output.style.color = result.startsWith('Error') ? '#f87171' : '#4ade80';
+      status.textContent = result.startsWith('Error') ? '⚠ Error' : '✓ Done';
+
+      if (result.startsWith('Error')) {
+        setTimeout(() => addCoachMessage(`I see your code has an error! Don't worry — errors are how we learn. Can you tell me what you think the error message means?`, 'coach'), 800);
+      }
+    } catch (e) {
+      output.textContent = `RuntimeError: ${e.message}`;
+      output.style.color = '#f87171';
+      status.textContent = '⚠ Error';
+    }
+  }, 150);
+}
+
+function clearOutput() {
+  document.getElementById('code-output').textContent = 'Output cleared. Write code and click Run!';
+  document.getElementById('code-output').style.color = '#4ade80';
+  document.getElementById('run-status').textContent = '';
+}
+
+function addCoachMessage(text, type) {
+  const container = document.getElementById('chat-messages');
+  const bubble = document.createElement('div');
+  bubble.className = `chat-bubble ${type}`;
+  bubble.innerHTML = type === 'coach' ? `<div style="display:flex;align-items:center;gap:5px;margin-bottom:4px;"><span style="font-size:10px;font-weight:600;color:#1d4ed8;text-transform:uppercase;letter-spacing:0.5px;">Coach</span></div>${text}` : text;
+  container.appendChild(bubble);
+  container.scrollTop = container.scrollHeight;
+}
+
+function showTyping() {
+  const container = document.getElementById('chat-messages');
+  const typing = document.createElement('div');
+  typing.className = 'chat-bubble coach';
+  typing.id = 'typing-indicator';
+  typing.innerHTML = '<span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span>';
+  container.appendChild(typing);
+  container.scrollTop = container.scrollHeight;
+}
+
+function removeTyping() {
+  const t = document.getElementById('typing-indicator');
+  if (t) t.remove();
+}
+
+function sendToCoach() {
+  const input = document.getElementById('coach-input');
+  const msg = input.value.trim();
+  if (!msg) return;
+
+  addCoachMessage(msg, 'user');
+  input.value = '';
+
+  showTyping();
+  setTimeout(() => {
+    removeTyping();
+    addCoachMessage(getCoachResponse(msg), 'coach');
+  }, 800 + Math.random() * 700);
+}
+
+function handleCoachKey(e) {
+  if (e.key === 'Enter') sendToCoach();
+}
+
+function updateProgress() {
+  const pct = Math.round((state.completedIds.size / state.modules.length) * 100);
+  document.getElementById('global-progress').style.width = pct + '%';
+  document.getElementById('progress-text').textContent = pct + '%';
+}
+
+function renderStreak() {
+  const el = document.getElementById('streak-dots');
+  el.innerHTML = '';
+  for (let i = 0; i < 7; i++) {
+    const d = document.createElement('div');
+    d.style.cssText = `width:10px;height:10px;border-radius:50%;background:${i < state.completedIds.size ? '#0e86e8' : '#e2e8f0'};`;
+    el.appendChild(d);
+  }
+}
+
+// ─── PDF Upload ───────────────────────────────────────────────
+function showUploadModal() {
+  document.getElementById('upload-modal').style.display = 'flex';
+}
+function closeUploadModal() {
+  document.getElementById('upload-modal').style.display = 'none';
+}
+
+function handleDragOver(e) {
+  e.preventDefault();
+  document.getElementById('modal-upload-zone').classList.add('dragover');
+}
+function handleDragLeave() {
+  document.getElementById('modal-upload-zone').classList.remove('dragover');
+}
+function handleDrop(e) {
+  e.preventDefault();
+  document.getElementById('modal-upload-zone').classList.remove('dragover');
+  const file = e.dataTransfer.files[0];
+  if (file && file.type === 'application/pdf') processPDF(file);
+}
+function handleFileSelect(e) {
+  const file = e.target.files[0];
+  if (file) processPDF(file);
+}
+
+async function processPDF(file) {
+  closeUploadModal();
+  const overlay = document.getElementById('loading-overlay');
+  const loadMsg = document.getElementById('loading-msg');
+  overlay.style.display = 'flex';
+
+  try {
+    loadMsg.textContent = 'Loading PDF file…';
+    const arrayBuffer = await file.arrayBuffer();
+
+    loadMsg.textContent = 'Extracting text content…';
+    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+
+    let fullText = '';
+    for (let p = 1; p <= Math.min(pdf.numPages, 30); p++) {
+      loadMsg.textContent = `Reading page ${p} of ${Math.min(pdf.numPages, 30)}…`;
+      const page = await pdf.getPage(p);
+      const content = await page.getTextContent();
+      fullText += content.items.map(i => i.str).join(' ') + '\n';
+    }
+
+    loadMsg.textContent = 'Building curriculum map…';
+    const modules = generateCurriculumFromText(fullText, file.name);
+
+    state.modules = modules;
+    state.currentModule = modules[0].id;
+    state.completedIds.clear();
+    state.pdfLoaded = true;
+
+    renderModuleList();
+    loadModule(modules[0].id);
+
+    overlay.style.display = 'none';
+
+    addCoachMessage(`🎉 I've built a custom curriculum from your PDF! I found <strong>${modules.length} topic modules</strong>. Ready to begin? What would you like to explore first?`, 'coach');
+
+  } catch (err) {
+    overlay.style.display = 'none';
+    alert('Could not read PDF: ' + err.message + '\n\nTip: Make sure the PDF contains selectable text (not just scanned images).');
+  }
+}
+
+function generateCurriculumFromText(text, filename) {
+  const topicKeywords = [
+    { keywords: ['variable', 'assign', 'data type', 'int', 'str', 'float', 'bool'], title: 'Variables & Types', icon: '📦' },
+    { keywords: ['if', 'else', 'elif', 'condition', 'boolean', 'comparison'], title: 'Conditional Logic', icon: '🔀' },
+    { keywords: ['for loop', 'while loop', 'iteration', 'range', 'repeat'], title: 'Loops & Iteration', icon: '🔁' },
+    { keywords: ['function', 'def', 'return', 'parameter', 'argument', 'call'], title: 'Functions', icon: '⚙️' },
+    { keywords: ['list', 'array', 'append', 'index', 'tuple', 'collection'], title: 'Lists & Collections', icon: '📋' },
+    { keywords: ['dictionary', 'dict', 'key', 'value', 'hash', 'map'], title: 'Dictionaries', icon: '🗂️' },
+    { keywords: ['class', 'object', 'oop', 'inheritance', 'method', 'instance'], title: 'Object-Oriented Programming', icon: '🏗️' },
+    { keywords: ['file', 'open', 'read', 'write', 'csv', 'json', 'io'], title: 'File Handling', icon: '📁' },
+    { keywords: ['exception', 'error', 'try', 'except', 'finally', 'raise'], title: 'Error Handling', icon: '🛡️' },
+    { keywords: ['import', 'module', 'library', 'package', 'pip', 'install'], title: 'Modules & Libraries', icon: '📚' },
+    { keywords: ['lambda', 'comprehension', 'generator', 'decorator', 'closure'], title: 'Advanced Functions', icon: '🚀' },
+    { keywords: ['regex', 'string method', 'format', 'split', 'replace', 'strip'], title: 'String Processing', icon: '✍️' },
+  ];
+
+  const lowerText = text.toLowerCase();
+  const foundTopics = [];
+
+  // Intro module always present
+  foundTopics.push({
+    id: 'pdf-intro',
+    icon: '📄',
+    title: `Introduction — ${filename.replace('.pdf', '')}`,
+    tag: 'beginner', tagLabel: 'Beginner', duration: '5 min', completed: false,
+    content: `
+      <h2>📄 PDF Curriculum Loaded</h2>
+      <p>We successfully extracted and analysed your Python PDF. Below is a learning map generated from the document's content.</p>
+      <div class="hint-box">💡 The modules below are based on topics detected in your PDF. Click each one to explore!</div>
+      <h3>Document Analysis</h3>
+      <p>File: <code>${filename}</code> · Text extracted: ~${Math.round(lowerText.length/1000)}K characters</p>
+      <div id="pdf-module-list" style="margin-top:16px;"></div>
+    `,
+    starterCode: '# Welcome to your custom curriculum!\n# Start with the first module in the sidebar.\n\nprint("Let\'s learn Python!")\n'
+  });
+
+  topicKeywords.forEach((topic, idx) => {
+    const score = topic.keywords.reduce((acc, kw) => acc + (lowerText.includes(kw) ? 1 : 0), 0);
+    if (score >= 1) {
+      const snippet = extractSnippet(text, topic.keywords[0]);
+      foundTopics.push({
+        id: `pdf-topic-${idx}`,
+        icon: topic.icon,
+        title: topic.title,
+        tag: idx < 5 ? 'beginner' : idx < 9 ? 'intermediate' : 'challenge',
+        tagLabel: idx < 5 ? 'Beginner' : idx < 9 ? 'Intermediate' : 'Challenge',
+        duration: `${8 + idx * 2} min`,
+        completed: false,
+        content: `
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
+            <div style="font-size:36px;">${topic.icon}</div>
+            <div>
+              <span class="lesson-tag ${idx < 5 ? 'beginner' : idx < 9 ? 'intermediate' : 'challenge'}">${idx < 5 ? 'Beginner' : idx < 9 ? 'Intermediate' : 'Challenge'}</span>
+              <h2 style="margin:6px 0 0;">${topic.title}</h2>
+            </div>
+          </div>
+          <p>This module was extracted from your uploaded PDF. The content below is a summary of the ${topic.title.toLowerCase()} section.</p>
+          <div class="hint-box" style="margin:16px 0;">
+            📖 <strong>From your PDF:</strong> This topic appears to cover: ${topic.keywords.filter(k => lowerText.includes(k)).join(', ')}.
+          </div>
+          ${snippet ? `<h3>Key Content from PDF</h3><div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:14px;font-size:13.5px;color:#475569;line-height:1.8;">${snippet}</div>` : ''}
+          <h3>Try It in the Playground!</h3>
+          <p>Practice the concepts from this section using the code editor. Ask the Scaffolding Coach if you get stuck!</p>
+        `,
+        starterCode: `# ${topic.title}\n# Practice the concepts from your PDF here\n\n# Type your code below:\n\nprint("Exploring: ${topic.title}")\n`
+      });
+    }
+  });
+
+  if (foundTopics.length === 1) {
+    // Fallback: use default modules with PDF intro
+    return [foundTopics[0], ...DEFAULT_MODULES.slice(0, 5)];
+  }
+
+  return foundTopics;
+}
+
+function extractSnippet(text, keyword) {
+  const idx = text.toLowerCase().indexOf(keyword);
+  if (idx === -1) return '';
+  const start = Math.max(0, idx - 50);
+  const end = Math.min(text.length, idx + 400);
+  let snippet = text.slice(start, end).trim();
+  if (snippet.length > 350) snippet = snippet.slice(0, 350) + '…';
+  return snippet.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+// ─── Tab handling for code editor ────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  const editor = document.getElementById('code-editor');
+  editor.addEventListener('keydown', function(e) {
+    if (e.key === 'Tab') {
+      e.preventDefault();
+      const start = this.selectionStart;
+      const end = this.selectionEnd;
+      this.value = this.value.substring(0, start) + '    ' + this.value.substring(end);
+      this.selectionStart = this.selectionEnd = start + 4;
+    }
+  });
+
+  // Initial load
+  renderModuleList();
+  loadModule('welcome');
+
+  // Initial coach welcome
+  setTimeout(() => {
+    addCoachMessage(`👋 Hello! I'm your <strong>Scaffolding Coach</strong>. I won't give you direct answers — instead, I'll ask guiding questions to help you think it through. Ready to start? Click the first module on the left!`, 'coach');
+  }, 500);
+
+  // Drag and drop on main page
+  document.addEventListener('dragover', (e) => e.preventDefault());
+  document.addEventListener('drop', (e) => {
+    e.preventDefault();
+    const file = e.dataTransfer.files[0];
+    if (file && file.type === 'application/pdf') processPDF(file);
+  });
+});
+
+function toggleSidebar() {
+  const sb = document.getElementById('sidebar');
+  sb.style.display = sb.style.display === 'flex' ? 'none' : 'flex';
+}
+</script>
+
+</body>
+</html>
